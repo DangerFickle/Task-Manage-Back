@@ -145,7 +145,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         Batch belongBatch = batchMapper.selectById(task.getBelongBatchId());
         if (!belongBatch.getEndTime().equals(GMTDate)) {
             if (belongBatch.getEndTime().compareTo(new Date()) <= 0) {
-                throw new GlobalBusinessException(800, "该批次已截止，取消提交失败");
+                throw new GlobalBusinessException(800, "该批次已截止，无法取消提交");
             }
         }
 

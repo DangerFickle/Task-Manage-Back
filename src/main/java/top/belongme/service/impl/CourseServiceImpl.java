@@ -107,6 +107,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
      * @Date 2023/2/8 17:45
      */
     @Override
+    @Transactional(rollbackFor = Exception.class)
     public Result updateCourse(Course course) {
         Course oldCourse = baseMapper.selectById(course.getId());
         if (Objects.isNull(oldCourse)) {
@@ -114,38 +115,21 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
         }
         // 标识最终是否更新数据库中的课程记录
         boolean isModify = false;
-        // 最终要更新到数据库的课程文件夹路径
-//        String finalCourseFolderPath = oldCourse.getFolderPath();
         // 原课程与新课程名不相同时，则进行修改
         if (!oldCourse.getCourseName().equals(course.getCourseName())) {
-            //构建原文件夹
-            File oldCourseFolder = new File(oldCourse.getFolderPath());
-            // 构建新文件夹
-            File newCourseFolder = new File(filePathBySystem + course.getCourseName());
-            // 重命名文件夹为新文件夹
-            oldCourseFolder.renameTo(newCourseFolder);
-            // 将最终要更新到数据库的课程文件夹路径赋值给finalCourseFolderPath
-            String finalCourseFolderPath = newCourseFolder.getAbsolutePath();
-            //
-            course.setFolderPath(finalCourseFolderPath);
-            isModify = true;
-        } else {
-            course.setCourseName(null);
-        }
-
-//        if (finalCourseFolderPath.equals(oldCourse.getFolderPath())) {
-//            course.setFolderPath(null);
-//        }
-
-        // 如果为true，则表示一定进行了课程名的修改，则需要修改数据库中该课程下的所有批次的文件夹路径
-        if (isModify) {
-            // 获取新课程的文件夹路径
-            String newCoursePath = course.getFolderPath();
+            // 查询数据库中是否存在新课程名
+            Course isExistsCourse = baseMapper.selectOne(new QueryWrapper<Course>().eq("course_name", course.getCourseName()));
+            if (Objects.nonNull(isExistsCourse)) {
+                throw new GlobalBusinessException(800, "课程名已存在");
+            }
+            // 课程要更改为的新文件夹路径
+            String newFolderPath = filePathBySystem + course.getCourseName();
             // 获取课程下所有的批次
             List<Batch> batchList = batchMapper.selectList(new QueryWrapper<Batch>().eq("belong_course_id", course.getId()));
             // 替换批次的文件夹路径中的课程名，oldCourse.getCourseName()替换为course.getCourseName()
             batchList.forEach(batch -> {
-                batch.setFolderPath(newCoursePath + File.separator + batch.getBatchName());
+                batch.setFolderPath(newFolderPath + File.separator + batch.getBatchName());
+                // 重新存入数据库
                 batchMapper.updateById(batch);
                 // 获取该批次下的所有作业
                 List<Task> taskList = taskMapper.selectList(new QueryWrapper<Task>().eq("belong_batch_id", batch.getId()));
@@ -154,6 +138,26 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
                     taskMapper.updateById(task);
                 });
             });
+
+            // 数据库中的记录更新完毕后，再修改文件夹的名称
+            File oldCourseFolder = new File(oldCourse.getFolderPath());
+            if (!oldCourseFolder.exists()) {
+                throw new GlobalBusinessException(800, "课程对应的文件夹不存在");
+            }
+            // 构建新文件夹
+            File newCourseFolder = new File(newFolderPath);
+
+            // 重命名文件夹为新文件夹
+            oldCourseFolder.renameTo(newCourseFolder);
+
+            // 判断新文件夹是否存在，存在则重命名成功，不存在则重命名失败
+            if (!newCourseFolder.exists()) {
+                throw new GlobalBusinessException(800, "课程文件夹重命名失败");
+            }
+            course.setFolderPath(newFolderPath);
+            isModify = true;
+        } else {
+            course.setCourseName(null);
         }
 
         // 如果旧课程描述与新课程描述不相同，则标识为需要修改
@@ -182,7 +186,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
         course.setId(id);
         course.setStatus(status);
         Course oldCourse = baseMapper.selectById(id);
-        if  (Objects.isNull(oldCourse)) {
+        if (Objects.isNull(oldCourse)) {
             throw new GlobalBusinessException(800, "课程不存在");
         }
         // 如果课程状态与传入的状态相同，则抛出异常
