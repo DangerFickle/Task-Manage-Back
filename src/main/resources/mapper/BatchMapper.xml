@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.belongme.mapper.BatchMapper">
+    <resultMap id="batchMap" type="top.belongme.model.pojo.Batch" autoMapping="true">
+        <id column="id" property="id"/>
+        <result column="batch_name" property="batchName"/>
+        <result column="description" property="description"/>
+        <result column="end_time" property="endTime"/>
+<!--        <result column="folder_path" property="folderPath"/>-->
+        <result column="belong_course_id" property="belongCourseId"/>
+        <result column="belong_course_name" property="belongCourseName"/>
+        <result column="creator_id" property="creatorId"/>
+        <result column="creator_name" property="creatorName"/>
+        <result column="modifier_id" property="modifierId"/>
+        <result column="modifier_name" property="modifierName"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+    <select id="selectPage" resultMap="batchMap">
+        select jb.id,
+        jb.batch_name,
+        jb.description,
+        jb.end_time,
+#         jb.folder_path,
+        jb.belong_course_id,
+        jc.course_name as belong_course_name,
+        jb.creator_id,
+        ju1.name as creator_name,
+        jb.modifier_id,
+        ju2.name as modifier_name,
+        jb.create_time,
+        jb.update_time
+        from job_batch jb
+        join job_course jc on jb.belong_course_id = jc.id
+        join job_user ju1 on jb.creator_id = ju1.id
+        join job_user ju2 on jb.modifier_id = ju2.id
+        <where>
+            <if test="vo.batchName != null">
+                and jb.batch_name like "%"#{vo.batchName}"%"
+            </if>
+            <if test="vo.description != null">
+                and jb.description like "%"#{vo.description}"%"
+            </if>
+            <if test="vo.creatorName != null">
+                and ju1.name like "%"#{vo.creatorName}"%"
+            </if>
+            <if test="vo.modifierName != null">
+                and ju2.name like "%"#{vo.modifierName}"%"
+            </if>
+            and jb.belong_course_id = #{vo.belongCourseId}
+        </where>
+        order by id desc
+    </select>
+</mapper>

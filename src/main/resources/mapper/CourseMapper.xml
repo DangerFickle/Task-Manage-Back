@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.belongme.mapper.CourseMapper">
+    <resultMap id="userMap" type="top.belongme.model.pojo.Course">
+        <id column="id" property="id"/>
+        <result column="course_name" property="courseName"/>
+        <result column="creator_id" property="creatorId"/>
+        <result column="description" property="description"/>
+        <result column="status" property="status"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="is_deleted" property="isDeleted"/>
+        <result column="creator_name" property="creatorName"/>
+        <result column="modifier_name" property="modifierName"/>
+    </resultMap>
+    <select id="selectPage" resultMap="userMap">
+        select t1.id, t1.course_name, t1.description, t1.status, t1.creator_id, t1.create_time, t1.update_time,
+        t1.is_deleted, t1.modifier_id, t2.name as creator_name, t3.name as modifier_name
+        from job_course t1
+        join job_user t2 on t1.creator_id = t2.id
+        join job_user t3 on t1.modifier_id = t3.id
+        <where>
+            <if test="vo.courseName != null">
+                and course_name like "%"#{vo.courseName}"%"
+            </if>
+            <if test="vo.description != null">
+                and description like "%"#{vo.description}"%"
+            </if>
+            <if test="vo.creatorName != null">
+                and t2.name like "%"#{vo.creatorName}"%"
+            </if>
+            <if test="vo.modifierName != null">
+                and t3.name like "%"#{vo.modifierName}"%"
+            </if>
+            and t1.is_deleted = 0
+        </where>
+        order by id desc
+    </select>
+</mapper>

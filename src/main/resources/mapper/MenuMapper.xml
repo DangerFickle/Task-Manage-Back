@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.belongme.mapper.MenuMapper">
+    <select id="getMenuListByUserId" resultType="top.belongme.model.pojo.Menu">
+        select distinct t3.*
+        from job_user t1
+                 join job_role_menu t2
+                      on t1.role_id = t2.role_id
+                 join job_menu t3
+                      on t2.menu_id = t3.id
+        where t1.id = #{userId}
+    </select>
+</mapper>
