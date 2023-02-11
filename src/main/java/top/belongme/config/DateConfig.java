@@ -1,7 +1,5 @@
 package top.belongme.config;
 
-import lombok.Data;
-import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -9,10 +7,9 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 
 /**
- * @Title: DateConfig
+ * @Title: DateConfig 测试更新项目
  * @ProjectName JobManage-Back
  * @Description: TODO
  * @Author DengChao
@@ -21,9 +18,11 @@ import java.util.List;
 @Configuration
 public class DateConfig {
 
-    // 1970-01-01 00:00:00，作为是否永不截止的比较元素
+    // 格林威治时间 1970-01-01 00:00:00，作为是否永不截止的比较元素
     @Bean("GMTDate")
     public Date getGMTDate() {
+        System.out.println("测试更新项目");
+
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         try {
             return dateFormat.parse("1970-01-01 00:00:00");
