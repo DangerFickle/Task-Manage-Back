@@ -34,7 +34,6 @@ import java.util.Objects;
  */
 @Slf4j
 @Service
-@Transactional(rollbackFor = Exception.class)
 public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> implements CourseService {
     @Resource
     private String filePathBySystem;
@@ -74,7 +73,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
                 throw new GlobalBusinessException(800, "课程对应的文件夹创建失败");
             }
         } else {
-            throw new GlobalBusinessException(800, "课程对应的文件夹已存在");
+            throw new GlobalBusinessException(800, "课程对应的文件夹已存在，有人在程序运行的目录手动创建了同名文件夹！");
         }
         throw new GlobalBusinessException(800, "课程创建失败");
     }
@@ -146,6 +145,9 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
             }
             // 构建新文件夹
             File newCourseFolder = new File(newFolderPath);
+            if (newCourseFolder.exists()) {
+                throw new GlobalBusinessException(800, "课程对应的文件夹已存在，有人在程序运行的目录手动创建了同名文件夹！");
+            }
 
             // 重命名文件夹为新文件夹
             oldCourseFolder.renameTo(newCourseFolder);
