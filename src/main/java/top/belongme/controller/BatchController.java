@@ -3,7 +3,9 @@ package top.belongme.controller;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import top.belongme.exception.GlobalBusinessException;
 import top.belongme.model.pojo.Batch;
 import top.belongme.model.pojo.Course;
 import top.belongme.model.result.Result;
@@ -12,6 +14,8 @@ import top.belongme.model.vo.CourseQueryVo;
 import top.belongme.service.BatchService;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
+import java.util.Objects;
 
 /**
  * @Title: BatchController
@@ -84,7 +88,10 @@ public class BatchController {
      */
     @PreAuthorize("hasAuthority('job:batch:insert')")
     @PostMapping("add")
-    public Result addBatch(@RequestBody Batch batch){
+    public Result addBatch(@RequestBody @Valid Batch batch, BindingResult result){
+        if (result != null && result.hasErrors()) {
+            throw new GlobalBusinessException(800, Objects.requireNonNull(result.getFieldError()).getDefaultMessage());
+        }
         return batchService.addBatchAndFolderPath(batch);
     }
 
@@ -97,7 +104,10 @@ public class BatchController {
      */
     @PreAuthorize("hasAuthority('job:batch:update')")
     @PutMapping("update")
-    public Result updateBatch(@RequestBody Batch batch){
+    public Result updateBatch(@RequestBody @Valid Batch batch, BindingResult result){
+        if (result != null && result.hasErrors()) {
+            throw new GlobalBusinessException(800, Objects.requireNonNull(result.getFieldError()).getDefaultMessage());
+        }
         return batchService.updateBatchAndFolderPath(batch);
     }
 

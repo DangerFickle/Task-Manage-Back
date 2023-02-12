@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
+import javax.validation.constraints.NotBlank;
 import java.util.Date;
 
 /**
@@ -16,11 +17,13 @@ import java.util.Date;
 @Data
 public class Batch {
     private String id;
+    @NotBlank(message = "批次名称不能为空")
     private String batchName; // 批次名称
+    @NotBlank(message = "批次描述不能为空")
     private String description; // 批次描述
-//    @JsonFormat(locale = "zh")
     private Date endTime; // 批次截至时间
     private String folderPath; // 批次文件夹路径
+    @NotBlank(message = "所属课程不能为空")
     private String belongCourseId; // 所属课程id
     @TableField(exist = false)
     private String belongCourseName; // 所属课程名称
