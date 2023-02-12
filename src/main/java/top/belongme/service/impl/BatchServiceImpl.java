@@ -136,74 +136,99 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
 
         // 标志批次最终是否需要被修改
         boolean isModify = false;
-        // 定义最终要存入数据库的批次文件夹路径，初始值为旧批次文件夹路径
-        String finalBatchFolderPath = oldBatch.getFolderPath();
+
+        // 获取旧批次的所属课程，因为修改批次名或所属课程名时都要使用，所以提前获取，以免修改课程时二次获取
+        Course oldBelongCourse = courseMapper.selectById(oldBatch.getBelongCourseId());
+
         // 批次名称要需改的情况，文件系统中
         if (!Objects.equals(batch.getBatchName(), oldBatch.getBatchName())) {
-            // 获取旧批次文件夹路径
-            String oldBatchFolderPath = oldBatch.getFolderPath();
-            File oldBatchFolder = new File(oldBatchFolderPath);
-
-            // 获取新批次文件夹路径
-            Course oldBelongCourse = courseMapper.selectById(oldBatch.getBelongCourseId());
+            // 拼接新批次文件夹路径，旧课程的路径 + 新批次名称
             String newBatchFolderPath = oldBelongCourse.getFolderPath() + File.separator + batch.getBatchName();
-            File newBatchFolder = new File(newBatchFolderPath);
+            // 构建要修改文件夹路径的新批次对象
+            Batch batchUpdateFolderPath = new Batch();
+            // 设置批次id
+            batchUpdateFolderPath.setId(batch.getId());
+            // 设置批次新名称
+            batchUpdateFolderPath.setBatchName(batch.getBatchName());
+            // 设置批次新文件夹路径
+            batchUpdateFolderPath.setFolderPath(newBatchFolderPath);
+            // 设置批次修改人id为当前登录的用户id
+//            batchUpdateFolderPath.setModifierId(loginUser.getUser().getId());
+            // 更新数据库中的批次信息
+            int update = baseMapper.updateById(batchUpdateFolderPath);
+            // 如果更新成功则重命名文件系统中的文件夹名称
+            if (update > 0) {
+                // 获取旧批次文件夹路径
+                String oldBatchFolderPath = oldBatch.getFolderPath();
+                // 构建旧批次文件夹
+                File oldBatchFolder = new File(oldBatchFolderPath);
+                // 构建新批次文件夹
+                File newBatchFolder = new File(newBatchFolderPath);
 
-            // 修改文件夹名称
-            boolean renameTo = oldBatchFolder.renameTo(newBatchFolder);
-            if (!renameTo) {
-                throw new GlobalBusinessException(800, "批次文件夹重命名失败");
+                // 修改文件夹名称
+                boolean renameTo = oldBatchFolder.renameTo(newBatchFolder);
+                if (!renameTo) {
+                    throw new GlobalBusinessException(800, "批次文件夹重命名失败");
+                }
+                /*
+                  如果批次名称修改了
+                  则将新批次文件夹路径赋值给方法第一行获取到的旧批次对象
+                  以供下方修改所属课程时使用
+                 */
+                oldBatch.setFolderPath(newBatchFolderPath);
+                isModify = true;
+            } else {
+                throw new GlobalBusinessException(800, "批次修改失败");
             }
-
-            // 替换最终要存入数据库的批次文件夹路径，替换内容为新旧批次名称
-            // String是不可变的字符序列，所以需要重新赋值
-            finalBatchFolderPath = finalBatchFolderPath.replace(oldBatch.getBatchName(), batch.getBatchName());
-            // 修改标志位
-            isModify = true;
         }
 
         // 修改批次所属课程
         if (batch.getBelongCourseId() != null && !batch.getBelongCourseId().equals(oldBatch.getBelongCourseId())) {
-            // 构建原批次文件夹路径，要移动到新所属课程的文件夹下
-            File oldBatchFolder = new File(finalBatchFolderPath);
             // 获取新的所属课程
             Course newBelongCourse = courseMapper.selectById(batch.getBelongCourseId());
+            // 构建新所属课程的文件夹对象
             File newBelongCourseFolder = new File(newBelongCourse.getFolderPath());
-
+            // 这里要获取旧的所属课程，上面提前获取过了，这里直接使用
+            // 获取最批次即将要移动到的目的地文件夹路径
+            String destBatchFolderPath = oldBatch.getFolderPath().replace(oldBelongCourse.getCourseName(), newBelongCourse.getCourseName());
+            // 构建最终要存入数据库的批次对象，因为是修改所属课程，所以不需要设置课程名称
+            Batch batchUpdateBelongCourse = new Batch();
+            batchUpdateBelongCourse.setId(batch.getId());
+            batchUpdateBelongCourse.setBelongCourseId(batch.getBelongCourseId());
+            batchUpdateBelongCourse.setFolderPath(destBatchFolderPath);
+//            batchUpdateBelongCourse.setModifierId(loginUser.getUser().getId());
+            // 更新批次信息
+            int update = baseMapper.updateById(batchUpdateBelongCourse);
+            // 如果批次的信息更新成功，则修改该批次下的所有作业的文件路径，将路径中旧所属课程名称替换为新所属课程名称
+            if (update > 0) {
+                // 获取该批次下的所有作业
+                List<Task> taskList = taskMapper.selectList(new QueryWrapper<Task>().eq("belong_batch_id", batch.getId()));
+                // 遍历作业，修改作业路径
+                taskList.forEach(task -> {
+                    task.setFilePath(batchUpdateBelongCourse.getFolderPath() + File.separator + task.getFileName());
+                    int updateTask = taskMapper.updateById(task);
+                    if (updateTask <= 0) {
+                        throw new GlobalBusinessException(800, "批次下的作业修改失败");
+                    }
+                });
+            } else {
+                throw new GlobalBusinessException(800, "批次修改失败");
+            }
+            // 构建原批次文件夹路径，要移动到新新所属课程的文件夹下
+            File oldBatchFolder = new File(oldBatch.getFolderPath());
             try {
                 // 将原批次文件夹移动到新所属课程的文件夹下
                 FileUtils.moveDirectoryToDirectory(oldBatchFolder, newBelongCourseFolder, true);
-                // 获取旧的所属课程
-                Course oldBelongCourse = courseMapper.selectById(oldBatch.getBelongCourseId());
-                // 替换最终要存入数据库的批次文件夹路径，替换内容为新所属课程的文件夹路径
-                // String是不可变的字符序列，所以需要重新赋值
-                finalBatchFolderPath = finalBatchFolderPath.replace(oldBelongCourse.getCourseName(), newBelongCourse.getCourseName());
+                // 如果所属课程修改成功，设置修改标志为true
                 isModify = true;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
 
-        // 如果旧批次的文件路径发生了变化，代表上面两个操作至少执行了一个，需要修改作业的路径
-        if (!finalBatchFolderPath.equals(oldBatch.getFolderPath())) {
-            // 如果finalBatchFolderPath与最开始的文件夹路径不相同，则设置最终要存入数据库的批次文件夹路径
-            batch.setFolderPath(finalBatchFolderPath);
-            // 获取该批次下所有的作业
-            List<Task> taskList = taskMapper.selectList(new QueryWrapper<Task>().eq("belong_batch_id", batch.getId()));
-            // 遍历作业，修改作业路径
-            taskList.forEach(task -> {
-                task.setFilePath(batch.getFolderPath() + File.separator + task.getFileName());
-                taskMapper.updateById(task);
-            });
-            // 设置修改者id为当前登陆的用户id
-            // 获取当前登录用户
-            // LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        }
 
         // 如果新描述与旧描述相同，则设置新描述为null，不修改
-        if (oldBatch.getDescription().equals(batch.getDescription())) {
-            batch.setDescription(null);
-        } else {
+        if (!oldBatch.getDescription().equals(batch.getDescription())) {
             isModify = true;
         }
 
@@ -212,9 +237,8 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
             batch.setEndTime(GMTDate);
             isModify = true;
         } else {
-            if (oldBatch.getEndTime().equals(batch.getEndTime())) {
-                batch.setEndTime(null);
-            } else {
+            // 如果新截止时间与旧截止时间不同，则设置标志为true，相同则不修改
+            if (!oldBatch.getEndTime().equals(batch.getEndTime())) {
                 isModify = true;
             }
         }
@@ -224,7 +248,6 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
             LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             // 设置修改者id
             batch.setModifierId(loginUser.getUser().getId());
-
             int update = baseMapper.updateById(batch);
             if (update > 0) {
                 return new Result(200, "批次修改成功");
