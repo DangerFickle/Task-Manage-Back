@@ -1,29 +1,27 @@
 package top.belongme.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FileUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 import top.belongme.exception.GlobalBusinessException;
 import top.belongme.mapper.BatchMapper;
 import top.belongme.mapper.TaskMapper;
 import top.belongme.model.pojo.Batch;
-import top.belongme.model.pojo.Task;
+import top.belongme.model.pojo.task.Task;
 import top.belongme.model.pojo.user.LoginUser;
 import top.belongme.model.result.Result;
-import top.belongme.model.vo.TaskQueryVo;
 import top.belongme.service.TaskService;
 
 import javax.annotation.Resource;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
+import javax.servlet.http.HttpServletResponse;
+import java.io.*;
+import java.net.URLEncoder;
+import java.nio.file.Files;
 import java.util.Date;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -44,10 +42,6 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
     @Resource
     private Date GMTDate;
 
-    @Override
-    public IPage<Task> selectPage(Page<Task> pageParam, TaskQueryVo taskQueryVo) {
-        return baseMapper.selectPage(pageParam, taskQueryVo);
-    }
 
     /**
      * TODO 提交作业
@@ -113,7 +107,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
             task.setFilePath(taskFilePath);
             // 设置作业文件名
             task.setFileName(finalFileName.toString());
-            // 设置提交人id
+            // 设置提交人id为当前登陆的用户id
             task.setUploaderId(loginUser.getUser().getId());
             baseMapper.insert(task);
             return new Result(200, "作业提交成功");
@@ -165,5 +159,53 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
             }
         }
         throw new GlobalBusinessException(800, "该作业文件不存在");
+    }
+
+    @Override
+    public void getTaskFile(String taskId, HttpServletResponse response) throws IOException {
+        Task task = taskMapper.selectById(taskId);
+        if (Objects.isNull(task)) {
+            throw new GlobalBusinessException(800, "该作业不存在");
+        }
+        // 查询该作业所属的批次是否已截止，已截止才可以下载
+        Batch batch = batchMapper.selectById(task.getBelongBatchId());
+        if (batch.getEndTime().after(new Date())) {
+            throw new GlobalBusinessException(800, "所属批次还未截止，无法下载");
+        }
+        File taskFile = new File(task.getFilePath());
+
+        if (!taskFile.exists()) {
+            throw new GlobalBusinessException(800, "该作业文件不存在");
+        }
+        //在vue的response中显示Content-Disposition
+        response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+        // 设置在下载框默认显示的文件名
+        response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(task.getFileName(), "UTF-8"));
+        response.setHeader("Content-Length", String.valueOf(taskFile.length()));
+
+        response.setContentType("application/octet-stream;charset=UTF-8");
+        InputStream inputStream = null;
+        BufferedInputStream bufferedInputStream = null;
+        BufferedOutputStream bufferedOutputStream = null;
+        try {
+            inputStream = Files.newInputStream(taskFile.toPath());
+            bufferedInputStream = new BufferedInputStream(inputStream);
+            bufferedOutputStream = new BufferedOutputStream(response.getOutputStream());
+            // 将文件流写入到response的输出流中
+            FileCopyUtils.copy(bufferedInputStream, bufferedOutputStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+            if (bufferedInputStream != null) {
+                bufferedInputStream.close();
+            }
+            if (bufferedOutputStream != null) {
+                bufferedOutputStream.flush();
+                bufferedOutputStream.close();
+            }
+        }
     }
 }

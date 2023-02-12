@@ -1,7 +1,8 @@
-package top.belongme.model.pojo;
+package top.belongme.model.pojo.task;
 
 import com.baomidou.mybatisplus.annotation.TableField;
 import lombok.Data;
+import top.belongme.model.pojo.Batch;
 import top.belongme.model.pojo.user.User;
 
 import java.util.Date;

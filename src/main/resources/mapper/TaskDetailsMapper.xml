@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.belongme.mapper.TaskDetailsMapper">
+    <select id="selectPage" resultType="top.belongme.model.pojo.task.TaskDetails">
+        select jt.id as task_id, ju.name as student_name, ju.student_number, jc.course_name as belong_course_name,
+        jb.batch_name as belong_batch_name, jt.create_time, jb.end_time as belong_batch_end_time
+        from job_task jt
+        join job_user ju
+        on jt.uploader_id = ju.id
+        join job_batch jb on jt.belong_batch_id = jb.id
+        join job_course jc on jb.belong_course_id = jc.id
+        <where>
+            <if test="vo.studentName != null">
+                and ju.name like "%"#{vo.studentName}"%"
+            </if>
+            and jt.belong_batch_id = #{vo.belongBatchId}
+        </where>
+    </select>
+</mapper>

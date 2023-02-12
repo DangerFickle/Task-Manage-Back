@@ -1,17 +1,15 @@
 package top.belongme.controller;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
-import top.belongme.model.pojo.Task;
 import top.belongme.model.result.Result;
-import top.belongme.model.vo.TaskQueryVo;
 import top.belongme.service.TaskService;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * @Title: TaskController
@@ -41,18 +39,6 @@ public class TaskController {
     }
 
 
-    @PreAuthorize("hasAuthority('job:task:select')")
-    @GetMapping("/listPage/{page}/{limit}")
-    public Result getBatchList(@PathVariable Long page,
-                                   @PathVariable Long limit,
-                                   TaskQueryVo taskQueryVo){
-        //创建page对象
-        Page<Task> pageParam = new Page<>(page, limit);
-        //调用service方法
-        IPage<Task> pageModel = taskService.selectPage(pageParam, taskQueryVo);
-        return new Result<>(200, "请求成功", pageModel);
-    }
-
     /**
      * TODO 取消提交作业
      *
@@ -63,5 +49,18 @@ public class TaskController {
     @DeleteMapping("/cancelCommit/{BatchId}")
     public Result cancelCommitTask(@PathVariable String BatchId){
         return taskService.cancelCommitTask(BatchId);
+    }
+
+
+    /**
+     * TODO 根据taskId下载指定作业文件
+     *
+     * @Author DengChao
+     * @Date 2023/2/12 22:55
+     */
+    @PreAuthorize("hasAuthority('job:task:select')")
+    @GetMapping("/downloadTask/{taskId}")
+    public void getTaskFile(@PathVariable String taskId, HttpServletResponse response) throws IOException {
+        taskService.getTaskFile(taskId, response);
     }
 }

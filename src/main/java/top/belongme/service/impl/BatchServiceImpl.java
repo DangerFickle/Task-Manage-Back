@@ -1,6 +1,5 @@
 package top.belongme.service.impl;
 
-import com.alibaba.druid.util.StringUtils;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -15,7 +14,7 @@ import top.belongme.mapper.CourseMapper;
 import top.belongme.mapper.TaskMapper;
 import top.belongme.model.pojo.Batch;
 import top.belongme.model.pojo.Course;
-import top.belongme.model.pojo.Task;
+import top.belongme.model.pojo.task.Task;
 import top.belongme.model.pojo.user.LoginUser;
 import top.belongme.model.result.Result;
 import top.belongme.model.vo.BatchQueryVo;
@@ -24,7 +23,6 @@ import top.belongme.service.BatchService;
 import javax.annotation.Resource;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -401,5 +399,17 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
 //        }
 
         return batchIPage;
+    }
+
+    @Override
+    public Result<List<Batch>> getBatchByCourseId(String courseId) {
+        // 查询该课程是否存在
+        Course course = courseMapper.selectById(courseId);
+        if (Objects.isNull(course)) {
+            throw new GlobalBusinessException(800, "该课程不存在");
+        }
+
+        List<Batch> batchListByCourseId = baseMapper.selectList(new QueryWrapper<Batch>().eq("belong_course_id", courseId));
+        return new Result<>(200, "请求成功", batchListByCourseId);
     }
 }

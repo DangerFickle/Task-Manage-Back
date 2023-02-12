@@ -7,6 +7,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import top.belongme.exception.GlobalBusinessException;
 import top.belongme.mapper.MenuMapper;
 import top.belongme.mapper.UserMapper;
 import top.belongme.model.pojo.Menu;
@@ -34,7 +35,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         User user = userMapper.selectOne(wrapper);
         //如果查询不到数据就通过抛出异常来给出提示
         if (Objects.isNull(user)) {
-            throw new RuntimeException("用户名或密码错误");
+            throw new GlobalBusinessException(800, "用户名或密码错误");
         }
         //TODO 根据用户查询权限信息 添加到LoginUser中
         // 获取该用户的角色所对应的所有菜单

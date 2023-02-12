@@ -14,7 +14,7 @@ import top.belongme.mapper.CourseMapper;
 import top.belongme.mapper.TaskMapper;
 import top.belongme.model.pojo.Batch;
 import top.belongme.model.pojo.Course;
-import top.belongme.model.pojo.Task;
+import top.belongme.model.pojo.task.Task;
 import top.belongme.model.pojo.user.LoginUser;
 import top.belongme.model.result.Result;
 import top.belongme.model.vo.CourseQueryVo;

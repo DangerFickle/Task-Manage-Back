@@ -4,9 +4,7 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
-import top.belongme.model.pojo.Course;
-import top.belongme.model.pojo.Task;
-import top.belongme.model.vo.CourseQueryVo;
+import top.belongme.model.pojo.task.Task;
 import top.belongme.model.vo.TaskQueryVo;
 
 /**
