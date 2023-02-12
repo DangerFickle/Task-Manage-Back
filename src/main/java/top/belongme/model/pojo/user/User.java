@@ -9,6 +9,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import top.belongme.model.pojo.Menu;
 
+import javax.validation.Valid;
+import javax.validation.constraints.Email;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -23,6 +25,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Valid
 public class User implements Serializable {
     private static final long serialVersionUID = -54579041104113736L;
     @TableId
@@ -36,6 +39,7 @@ public class User implements Serializable {
     private Integer roleId;
     @TableField(exist = false)
     private String roleName;
+    @Email(message = "邮箱格式错误")
     private String email;
     private String avatar;
     private Integer status;

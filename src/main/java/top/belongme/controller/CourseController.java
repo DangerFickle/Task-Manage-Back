@@ -4,14 +4,20 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import top.belongme.exception.GlobalBusinessException;
 import top.belongme.model.pojo.Course;
 import top.belongme.model.result.Result;
 import top.belongme.model.vo.CourseQueryVo;
 import top.belongme.service.CourseService;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @Title: CourseController
@@ -22,6 +28,7 @@ import java.util.List;
  */
 @RestController
 @RequestMapping("course")
+//@Validated
 public class CourseController {
 
     @Resource
@@ -79,7 +86,10 @@ public class CourseController {
      */
     @PreAuthorize("hasAuthority('job:course:insert')")
     @PostMapping("/add")
-    public Result addCourse(@RequestBody Course course) {
+    public Result addCourse(@RequestBody @Valid Course course, BindingResult result) {
+        if (result != null && result.hasErrors()) {
+            throw new GlobalBusinessException(800, Objects.requireNonNull(result.getFieldError()).getDefaultMessage());
+        }
         return courseService.addCourseAndFolderPath(course);
     }
 
@@ -115,7 +125,10 @@ public class CourseController {
      */
     @PreAuthorize("hasAuthority('job:course:update')")
     @PutMapping("/update")
-    public Result updateCourse(@RequestBody Course course) {
+    public Result updateCourse(@RequestBody @Valid Course course, BindingResult result) {
+        if (result != null && result.hasErrors()) {
+            throw new GlobalBusinessException(800, Objects.requireNonNull(result.getFieldError()).getDefaultMessage());
+        }
         return courseService.updateCourse(course);
     }
 

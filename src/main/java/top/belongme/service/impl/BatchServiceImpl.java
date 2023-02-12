@@ -245,8 +245,8 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
             throw new GlobalBusinessException(800, "该批次不存在");
         }
         // 获取该批次下的作业，如果存在未删除的作业，则无法删除该批次
-        Task task = taskMapper.selectOne(new QueryWrapper<Task>().eq("belong_batch_id", batch.getId()));
-        if (Objects.nonNull(task)) {
+        List<Task> taskList = taskMapper.selectList(new QueryWrapper<Task>().eq("belong_batch_id", batch.getId()));
+        if (!taskList.isEmpty()) {
             throw new GlobalBusinessException(800, "该批次下存在未删除的作业，无法删除");
         }
 
