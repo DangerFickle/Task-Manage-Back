@@ -35,6 +35,9 @@ spring:
             required: false
           #开启debug模式，这样邮件发送过程的日志会在控制台打印出来，方便排查错误
         debug: true
+  mvc:
+    servlet:
+      load-on-startup: 1
 mybatis-plus:
   global-config:
     db-config:

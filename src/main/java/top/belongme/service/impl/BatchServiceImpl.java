@@ -7,6 +7,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.apache.commons.io.FileUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import top.belongme.exception.GlobalBusinessException;
 import top.belongme.mapper.BatchMapper;
@@ -36,6 +37,7 @@ import java.util.Objects;
  * @Date 2023/2/915:30
  */
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements BatchService {
 
     @Resource
@@ -149,7 +151,7 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
             // 设置批次id
             batchUpdateFolderPath.setId(batch.getId());
             // 设置批次新名称
-            batchUpdateFolderPath.setBatchName(batch.getBatchName());
+//            batchUpdateFolderPath.setBatchName(batch.getBatchName());
             // 设置批次新文件夹路径
             batchUpdateFolderPath.setFolderPath(newBatchFolderPath);
             // 设置批次修改人id为当前登录的用户id
@@ -180,6 +182,8 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
             } else {
                 throw new GlobalBusinessException(800, "批次修改失败");
             }
+        } else {
+            batch.setBatchName(null);
         }
 
         // 修改批次所属课程
@@ -194,7 +198,7 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
             // 构建最终要存入数据库的批次对象，因为是修改所属课程，所以不需要设置课程名称
             Batch batchUpdateBelongCourse = new Batch();
             batchUpdateBelongCourse.setId(batch.getId());
-            batchUpdateBelongCourse.setBelongCourseId(batch.getBelongCourseId());
+//            batchUpdateBelongCourse.setBelongCourseId(batch.getBelongCourseId());
             batchUpdateBelongCourse.setFolderPath(destBatchFolderPath);
 //            batchUpdateBelongCourse.setModifierId(loginUser.getUser().getId());
             // 更新批次信息
@@ -217,6 +221,7 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
             // 构建原批次文件夹路径，要移动到新新所属课程的文件夹下
             File oldBatchFolder = new File(oldBatch.getFolderPath());
             try {
+
                 // 将原批次文件夹移动到新所属课程的文件夹下
                 FileUtils.moveDirectoryToDirectory(oldBatchFolder, newBelongCourseFolder, true);
                 // 如果所属课程修改成功，设置修改标志为true
@@ -224,6 +229,9 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
+        } else {
+            // 如果所属课程未修改，则将所属课程id设置为null，不修改
+            batch.setBelongCourseId(null);
         }
 
 
@@ -232,7 +240,7 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
             isModify = true;
         }
 
-        // 如果新截止时间为null，则代表前端未传入，则设置为格林威治时间
+        // 如果新截止时间为null，代表前端未传入，则设置为格林威治时间
         if (Objects.isNull(batch.getEndTime())) {
             batch.setEndTime(GMTDate);
             isModify = true;
@@ -255,7 +263,7 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
                 throw new GlobalBusinessException(800, "批次修改失败");
             }
         } else {
-            throw new GlobalBusinessException(800, "未修改，批次信息未发生变化");
+            throw new GlobalBusinessException(800, "批次信息未发生变化");
         }
 
     }
@@ -273,21 +281,22 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
             throw new GlobalBusinessException(800, "该批次下存在未删除的作业，无法删除");
         }
 
-        String batchFolderPath = batch.getFolderPath();
-        // 删除批次文件夹
-        File batchFolder = new File(batchFolderPath);
-        // 如果批次文件夹存在，则删除
-        try {
-            FileUtils.deleteDirectory(batchFolder);
-            int delete = baseMapper.deleteById(batchId);
-            if (delete > 0) {
+        int delete = baseMapper.deleteById(batchId);
+        if (delete > 0) {
+            String batchFolderPath = batch.getFolderPath();
+            // 要删除的批次文件夹
+            File batchFolder = new File(batchFolderPath);
+            // 如果批次文件夹存在，则删除
+            try {
+                FileUtils.deleteDirectory(batchFolder);
                 return new Result(200, "批次删除成功");
-            } else {
-                throw new GlobalBusinessException(800, "批次删除失败");
+            } catch (IOException e) {
+                throw new RuntimeException(e);
             }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } else {
+            throw new GlobalBusinessException(800, "批次删除失败");
         }
+
     }
 
     @Override
@@ -295,6 +304,22 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
         Batch oldBatch = baseMapper.selectById(batchId);
         if (Objects.isNull(oldBatch)) {
             throw new GlobalBusinessException(800, "该批次不存在");
+        }
+
+        // 判断原批次是否已截止
+        if (oldBatch.getEndTime().equals(GMTDate)) {
+            oldBatch.setIsEnd(0);
+        } else {
+            if (oldBatch.getEndTime().compareTo(new Date()) <= 0) {
+                oldBatch.setIsEnd(1);
+            } else {
+                oldBatch.setIsEnd(0);
+            }
+        }
+
+        // 如果要更改的状态刚好是当前批次的状态，则不修改
+        if (Objects.equals(status, oldBatch.getIsEnd())) {
+            throw new GlobalBusinessException(800, "批次状态同步失败");
         }
 
         Batch batch = new Batch();
@@ -306,9 +331,6 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
             // 如果要切换成未截止状态，则设置截止时间为格林威治时间
             batch.setEndTime(GMTDate);
         }
-//        if (Objects.equals(status, oldBatch.getIsEnd())) {
-//            throw new GlobalBusinessException(800, "批次状态同步失败");
-//        }
 
         // 获取当前登录用户
         LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
