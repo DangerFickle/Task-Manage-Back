@@ -2,6 +2,9 @@ package top.belongme.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import net.lingala.zip4j.ZipFile;
+import net.lingala.zip4j.exception.ZipException;
+import net.lingala.zip4j.util.Zip4jUtil;
 import org.apache.commons.io.FileUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -9,11 +12,14 @@ import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 import top.belongme.exception.GlobalBusinessException;
 import top.belongme.mapper.BatchMapper;
+import top.belongme.mapper.CourseMapper;
 import top.belongme.mapper.TaskMapper;
 import top.belongme.model.pojo.Batch;
+import top.belongme.model.pojo.Course;
 import top.belongme.model.pojo.task.Task;
 import top.belongme.model.pojo.user.LoginUser;
 import top.belongme.model.result.Result;
+import top.belongme.service.CourseService;
 import top.belongme.service.TaskService;
 
 import javax.annotation.Resource;
@@ -21,7 +27,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.file.Files;
+import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -40,7 +49,13 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
     private TaskMapper taskMapper;
 
     @Resource
+    private CourseMapper courseMapper;
+
+    @Resource
     private Date GMTDate;
+
+    @Resource
+    private String filePathBySystem;
 
 
     /**
@@ -124,6 +139,19 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
      */
     @Override
     public Result cancelCommitTask(String batchId) {
+        Batch belongBatch = batchMapper.selectById(batchId);
+        // 判断所属批次是否存在
+        if (Objects.isNull(belongBatch)) {
+            throw new GlobalBusinessException(800, "该批次不存在");
+        }
+
+        // 判断所属批次是否已截止
+        if (!belongBatch.getEndTime().equals(GMTDate)) {
+            if (belongBatch.getEndTime().compareTo(new Date()) <= 0) {
+                throw new GlobalBusinessException(800, "该批次已截止，无法取消提交");
+            }
+        }
+
         // 获取当前登陆的用户
         LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         QueryWrapper<Task> taskQueryWrapper = new QueryWrapper<>();
@@ -135,19 +163,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
             throw new GlobalBusinessException(800, "您还没有提交过该批次呢");
         }
 
-        // 判断所属批次是否已截止
-        Batch belongBatch = batchMapper.selectById(task.getBelongBatchId());
-        if (!belongBatch.getEndTime().equals(GMTDate)) {
-            if (belongBatch.getEndTime().compareTo(new Date()) <= 0) {
-                throw new GlobalBusinessException(800, "该批次已截止，无法取消提交");
-            }
-        }
-
-        // 判断当前登陆用户是否为该作业的提交人
-        Task task1 = taskMapper.selectOne(new QueryWrapper<Task>().eq("id", task.getId()).eq("uploader_id", loginUser.getUser().getId()));
-        if (Objects.isNull(task1)) {
-            throw new GlobalBusinessException(800, "您不是该作业的提交人");
-        }
+        // 删除作业文件
         File taskFile = new File(task.getFilePath());
         if (taskFile.exists()) {
             boolean delete = taskFile.delete();
@@ -172,8 +188,8 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         if (batch.getEndTime().after(new Date())) {
             throw new GlobalBusinessException(800, "所属批次还未截止，无法下载");
         }
-        File taskFile = new File(task.getFilePath());
 
+        File taskFile = new File(task.getFilePath());
         if (!taskFile.exists()) {
             throw new GlobalBusinessException(800, "该作业文件不存在");
         }
@@ -206,6 +222,94 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
                 bufferedOutputStream.flush();
                 bufferedOutputStream.close();
             }
+        }
+    }
+
+    @Override
+    public void getBatchFile(String batchId, HttpServletResponse response) throws IOException {
+        // 通过响应头通知前端异常信息
+        response.setHeader("Access-Control-Expose-Headers","exception");
+        // 设置响应类型为文本
+        Batch batch = batchMapper.selectById(batchId);
+        if (Objects.isNull(batch)) {
+            response.setHeader("exception", "batch not exist");
+            throw new GlobalBusinessException(800, "该批次不存在");
+        }
+        if (batch.getEndTime().after(new Date())) {
+            response.setHeader("exception", "batch not end");
+            throw new GlobalBusinessException(800, "该批次还未截止，无法下载");
+        }
+
+        // 判断所属课程是否被禁用
+        Course course = courseMapper.selectById(batch.getBelongCourseId());
+        if (course.getStatus() == 0) {
+            response.setHeader("exception", "course is disabled");
+            throw new GlobalBusinessException(800, "所属课程已被禁用，无法下载");
+        }
+
+        // 判断批次下是否存在作业
+        QueryWrapper<Task> taskQueryWrapper = new QueryWrapper<>();
+        taskQueryWrapper.eq("belong_batch_id", batchId);
+        long count = taskMapper.selectCount(taskQueryWrapper);
+        if (count == 0) {
+            response.setHeader("exception", "no task");
+            throw new GlobalBusinessException(800, "该批次下还没有作业");
+        }
+
+        // 获取该批次的文件夹
+        String batchFolderPath = batch.getFolderPath();
+        File batchFolder = new File(batchFolderPath);
+        if (!batchFolder.exists()) {
+            response.setHeader("exception", "batch folder not exist");
+            throw new GlobalBusinessException(800, "该批次文件夹不存在");
+        }
+
+        // 获取该批次文件夹下的的所有作业文件
+        List<File> fileList = Arrays.asList(batchFolder.listFiles());
+        // 以所属课程名 + 批次名作为zip文件名
+        String fileName = course.getCourseName() + "的" + batch.getBatchName() + ".zip";
+        // 拼接压缩包的路径
+        String filePath = filePathBySystem + "temp_files" + File.separator + fileName + ".zip";
+        // 压缩文件
+        new ZipFile(filePath).addFiles(fileList);
+
+        // 获取压缩后的zip文件
+        File taskFilesZip = new File(filePath);
+        if (!taskFilesZip.exists()) {
+            throw new GlobalBusinessException(800, "压缩文件失败");
+        }
+
+        //在vue的response中显示Content-Disposition
+        response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+        // 设置在下载框默认显示的文件名
+        response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(taskFilesZip.getName(), "UTF-8"));
+        response.setHeader("Content-Length", String.valueOf(taskFilesZip.length()));
+
+        response.setContentType("application/octet-stream;charset=UTF-8");
+        InputStream inputStream = null;
+        BufferedInputStream bufferedInputStream = null;
+        BufferedOutputStream bufferedOutputStream = null;
+        try {
+            inputStream = Files.newInputStream(taskFilesZip.toPath());
+            bufferedInputStream = new BufferedInputStream(inputStream);
+            bufferedOutputStream = new BufferedOutputStream(response.getOutputStream());
+            // 将文件流写入到response的输出流中
+            FileCopyUtils.copy(bufferedInputStream, bufferedOutputStream);
+        } catch (Exception e) {
+            e.printStackTrace();
+        } finally {
+            if (inputStream != null) {
+                inputStream.close();
+            }
+            if (bufferedInputStream != null) {
+                bufferedInputStream.close();
+            }
+            if (bufferedOutputStream != null) {
+                bufferedOutputStream.flush();
+                bufferedOutputStream.close();
+            }
+            // 删除临时文件夹中的压缩包
+//            taskFilesZip.delete();
         }
     }
 }

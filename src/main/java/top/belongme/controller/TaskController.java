@@ -58,9 +58,21 @@ public class TaskController {
      * @Author DengChao
      * @Date 2023/2/12 22:55
      */
-    @PreAuthorize("hasAuthority('job:task:select')")
+    @PreAuthorize("hasAuthority('job:taskDetail:select')")
     @GetMapping("/downloadTask/{taskId}")
     public void getTaskFile(@PathVariable String taskId, HttpServletResponse response) throws IOException {
         taskService.getTaskFile(taskId, response);
+    }
+
+    /**
+     * TODO 根据批次id下载整个批次文件夹的压缩包
+     *
+     * @Author DengChao
+     * @Date 2023/2/13 20:50
+     */
+    @PreAuthorize("hasAuthority('job:taskDetail:select')")
+    @GetMapping("/downloadBatch/{batchId}")
+    public void getBatchFolder(@PathVariable String batchId, HttpServletResponse response) throws IOException {
+        taskService.getBatchFile(batchId, response);
     }
 }

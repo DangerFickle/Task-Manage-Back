@@ -40,22 +40,11 @@ public class TaskDetailsServiceImpl extends ServiceImpl<TaskDetailsMapper, TaskD
 
     @Override
     public IPage<TaskDetails> selectPage(Page<TaskDetails> pageParam, TaskDetailsQueryVo taskDetailsQueryVo) {
-        // 查询该批次所属课程是否存在
-        Course belongCourse = courseMapper.selectById(taskDetailsQueryVo.getBelongCourseId());
-        if (Objects.isNull(belongCourse)) {
-            throw new GlobalBusinessException(800, "该批次所属课程不存在");
-        }
-        if (belongCourse.getStatus() == 0) {
-            throw new GlobalBusinessException(800, "该批次所属课程已禁用");
-        }
-
-        // 查询该批次所属课程
+        // 查询该批次是否存在
         Batch belongBatch = batchMapper.selectById(taskDetailsQueryVo.getBelongBatchId());
         if (Objects.isNull(belongBatch)) {
-            throw new GlobalBusinessException(802, "该批次不存在");
+            throw new GlobalBusinessException(800, "该批次不存在");
         }
-
-
 
         IPage<TaskDetails> taskDetailsIPage = baseMapper.selectPage(pageParam, taskDetailsQueryVo);
         // 遍历并判断所属批次是否已经截止

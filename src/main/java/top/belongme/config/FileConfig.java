@@ -34,6 +34,11 @@ public class FileConfig {
         try {
             String filePathBySystem = URLDecoder.decode(path, "utf-8") + workFolderName + File.separator;
             log.info("系统运行的目录：{}", filePathBySystem);
+            // 创建根据批次下载全部文件时的临时存放目录
+            File tempFilesFolder = new File(filePathBySystem + "temp_files");
+            if (!tempFilesFolder.exists()) {
+                tempFilesFolder.mkdirs();
+            }
             return filePathBySystem;
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("初始化不同系统对应的文件路径失败");

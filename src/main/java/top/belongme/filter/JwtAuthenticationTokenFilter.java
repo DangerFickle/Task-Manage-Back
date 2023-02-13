@@ -38,6 +38,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
+        response.setHeader("Access-Control-Expose-Headers", "Is_Expired"); // 允许前端接收到响应头中的Is_Expired
         // 获取请求头中的token
         String token = request.getHeader("token");
         // 如果请求头中没有token，直接放行，因为没有向SecurityContext中存入认证信息，框架内部会自动让用户做认证
@@ -51,15 +52,18 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             Claims claims = JwtUtil.parseJWT(token);
             userId = claims.getSubject();
         } catch (ExpiredJwtException e) {
+            response.setHeader("Is_Expired", "expired"); // 用于前端接收类型为Blob时，判断用户登陆是否过期
             String invalidToken = JSON.toJSONString(new Result<>(809, "token已过期，请重新登陆"));
             WebUtils.renderString(response, invalidToken);
             return;
         } catch (MalformedJwtException e) {
+            response.setHeader("Is_Expired", "expired"); // 用于前端接收类型为Blob时，判断用户登陆是否过期
             String invalidToken = JSON.toJSONString(new Result<>(810, "token非法"));
             WebUtils.renderString(response, invalidToken);
             return;
         } catch (Exception e) {
             e.printStackTrace();
+            response.setHeader("Is_Expired", "expired"); // 用于前端接收类型为Blob时，判断用户登陆是否过期
             String invalidToken = JSON.toJSONString(new Result<>(807, "token未知错误"));
             WebUtils.renderString(response, invalidToken);
             return;
@@ -69,6 +73,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
         LoginUser loginUser = redisCache.getCacheObject("login:" + userId);
         // 如果redis中取不到用户信息，说明用户已经过期
         if (Objects.isNull(loginUser)) {
+            response.setHeader("Is_Expired", "expired"); // 用于前端接收类型为Blob时，判断用户登陆是否过期
             String loginExpired = JSON.toJSONString(new Result<>(806, "缓存已过期"));
             WebUtils.renderString(response, loginExpired);
             return;

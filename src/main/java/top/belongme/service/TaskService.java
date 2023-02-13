@@ -3,6 +3,7 @@ package top.belongme.service;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import net.lingala.zip4j.exception.ZipException;
 import org.springframework.web.multipart.MultipartFile;
 import top.belongme.model.pojo.task.Task;
 import top.belongme.model.result.Result;
@@ -31,4 +32,6 @@ public interface TaskService extends IService<Task> {
     Result cancelCommitTask(String taskIid);
 
     void getTaskFile(String taskId, HttpServletResponse response) throws IOException;
+
+    void getBatchFile(String batchId, HttpServletResponse response) throws IOException;
 }

@@ -16,5 +16,5 @@ import top.belongme.model.vo.TaskDetailsQueryVo;
  * @Date 2023/2/1220:08
  */
 public interface TaskDetailsService extends IService<TaskDetails> {
-    IPage<TaskDetails> selectPage(Page<TaskDetails> pageParam, @Param("vo") TaskDetailsQueryVo taskDetailsQueryVo);
+    IPage<TaskDetails> selectPage(Page<TaskDetails> pageParam, TaskDetailsQueryVo taskDetailsQueryVo);
 }

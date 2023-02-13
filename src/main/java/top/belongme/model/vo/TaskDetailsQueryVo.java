@@ -18,6 +18,5 @@ public class TaskDetailsQueryVo {
     // 作业所属批次id
     @NotBlank(message = "所属批次id不能为空")
     private String belongBatchId;
-    @NotBlank(message = "所属课程id不能为空")
     private String belongCourseId;
 }

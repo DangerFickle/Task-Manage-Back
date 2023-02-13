@@ -101,6 +101,15 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
      */
     @Override
     public IPage<Batch> selectPage(Page<Batch> pageParam, BatchQueryVo batchQueryVo) {
+        Course course = courseMapper.selectById(batchQueryVo.getBelongCourseId());
+        if (Objects.isNull(course)) {
+            throw new GlobalBusinessException(800, "该课程不存在");
+        }
+
+        if (course.getStatus() == 0) {
+            throw new GlobalBusinessException(800, "该课程已被禁用");
+        }
+
         IPage<Batch> batchIPage = baseMapper.selectPage(pageParam, batchQueryVo);
         batchIPage.getRecords().forEach(batch -> {
             // 判断批次的截止时间是否是格林威治时间，是则设置为未截止，否则设置为已截止
@@ -344,6 +353,14 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
 
     @Override
     public IPage<Batch> selectPageByCourseId(Page<Batch> pageParam, BatchQueryVo batchQueryVo) {
+        Course belongCourse = courseMapper.selectById(batchQueryVo.getBelongCourseId());
+        if (Objects.isNull(belongCourse)) {
+            throw new GlobalBusinessException(800, "该课程不存在");
+        }
+        if (belongCourse.getStatus() == 0) {
+            throw new GlobalBusinessException(800, "该课程已被禁用");
+        }
+
         IPage<Batch> batchIPage = this.selectPage(pageParam, batchQueryVo);
         List<Batch> records = batchIPage.getRecords();
         // 获取当前登陆的用户
@@ -399,17 +416,5 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
 //        }
 
         return batchIPage;
-    }
-
-    @Override
-    public Result<List<Batch>> getBatchByCourseId(String courseId) {
-        // 查询该课程是否存在
-        Course course = courseMapper.selectById(courseId);
-        if (Objects.isNull(course)) {
-            throw new GlobalBusinessException(800, "该课程不存在");
-        }
-
-        List<Batch> batchListByCourseId = baseMapper.selectList(new QueryWrapper<Batch>().eq("belong_course_id", courseId));
-        return new Result<>(200, "请求成功", batchListByCourseId);
     }
 }

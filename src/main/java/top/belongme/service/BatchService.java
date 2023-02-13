@@ -29,5 +29,4 @@ public interface BatchService extends IService<Batch> {
 
     IPage<Batch> selectPageByCourseId(Page<Batch> pageParam, BatchQueryVo batchQueryVo);
 
-    Result<List<Batch>> getBatchByCourseId(String courseId);
 }

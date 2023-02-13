@@ -70,12 +70,6 @@ public class BatchController {
         return new Result<>(200, "请求成功", pageModel);
     }
 
-    @PreAuthorize("hasAuthority('job:batch:select')")
-    @GetMapping("listByCourseId/{courseId}")
-    public Result<List<Batch>> getBatchByCourseId(@PathVariable String courseId) {
-        return batchService.getBatchByCourseId(courseId);
-    }
-
     /**
      * TODO 根据batchId获取批次
      *
