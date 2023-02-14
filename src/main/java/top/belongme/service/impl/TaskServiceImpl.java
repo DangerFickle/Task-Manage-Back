@@ -235,7 +235,8 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
             response.setHeader("exception", "batch not exist");
             throw new GlobalBusinessException(800, "该批次不存在");
         }
-        if (batch.getEndTime().after(new Date())) {
+
+        if (batch.getEndTime().after(new Date()) || batch.getEndTime().equals(GMTDate)) {
             response.setHeader("exception", "batch not end");
             throw new GlobalBusinessException(800, "该批次还未截止，无法下载");
         }
@@ -267,7 +268,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         // 获取该批次文件夹下的的所有作业文件
         List<File> fileList = Arrays.asList(batchFolder.listFiles());
         // 以所属课程名 + 批次名作为zip文件名
-        String fileName = course.getCourseName() + "的" + batch.getBatchName() + ".zip";
+        String fileName = course.getCourseName() + "---" + batch.getBatchName();
         // 拼接压缩包的路径
         String filePath = filePathBySystem + "temp_files" + File.separator + fileName + ".zip";
         // 压缩文件
@@ -309,7 +310,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
                 bufferedOutputStream.close();
             }
             // 删除临时文件夹中的压缩包
-//            taskFilesZip.delete();
+            taskFilesZip.delete();
         }
     }
 }

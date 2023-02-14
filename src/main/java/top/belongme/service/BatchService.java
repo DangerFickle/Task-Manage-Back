@@ -27,6 +27,7 @@ public interface BatchService extends IService<Batch> {
 
     Result updateStatus(String batchId, Integer status);
 
-    IPage<Batch> selectPageByCourseId(Page<Batch> pageParam, BatchQueryVo batchQueryVo);
+    IPage<Batch> selectPageIsCommit(Page<Batch> pageParam, BatchQueryVo batchQueryVo);
+    IPage<Batch> selectPageIsCommitAndCount(Page<Batch> pageParam, BatchQueryVo batchQueryVo);
 
 }

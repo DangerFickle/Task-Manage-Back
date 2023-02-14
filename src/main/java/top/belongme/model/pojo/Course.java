@@ -1,13 +1,9 @@
 package top.belongme.model.pojo;
 
 import com.baomidou.mybatisplus.annotation.TableField;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotEmpty;
-import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 /**
@@ -32,9 +28,7 @@ public class Course {
     @NotBlank(message = "课程描述不能为空")
     private String description;
     private Integer status;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", locale = "zh")
     private Date createTime;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", locale = "zh")
     private Date updateTime;
     private Integer isDeleted;
 }

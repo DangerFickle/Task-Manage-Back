@@ -26,8 +26,6 @@ public interface TaskService extends IService<Task> {
     // 提交作业
     Result commitTask(MultipartFile uploadTaskFile, String belongBatchId);
 
-//    IPage<Task> selectPage(Page<Task> pageParam, TaskDetailsQueryVo taskDetailsQueryVo);
-
     // 取消提交作业
     Result cancelCommitTask(String taskIid);
 

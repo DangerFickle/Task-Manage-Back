@@ -53,19 +53,6 @@ public class CourseController {
     }
 
     /**
-     * TODO 获取课程列表
-     *
-     * @Author DengChao
-     * @Date 2023/2/9 12:24
-     */
-    @PreAuthorize("hasAuthority('job:course:select')")
-    @GetMapping("/list")
-    public Result<List<Course>> getCourseList() {
-        List<Course> courseList = courseService.list();
-        return new Result<>(200, "请求成功", courseList);
-    }
-
-    /**
      * TODO 获取课程列表，只要已启用的
      *
      * @Author DengChao

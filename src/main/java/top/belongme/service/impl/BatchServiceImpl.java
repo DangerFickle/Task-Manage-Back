@@ -12,10 +12,12 @@ import top.belongme.exception.GlobalBusinessException;
 import top.belongme.mapper.BatchMapper;
 import top.belongme.mapper.CourseMapper;
 import top.belongme.mapper.TaskMapper;
+import top.belongme.mapper.UserMapper;
 import top.belongme.model.pojo.Batch;
 import top.belongme.model.pojo.Course;
 import top.belongme.model.pojo.task.Task;
 import top.belongme.model.pojo.user.LoginUser;
+import top.belongme.model.pojo.user.User;
 import top.belongme.model.result.Result;
 import top.belongme.model.vo.BatchQueryVo;
 import top.belongme.service.BatchService;
@@ -43,6 +45,9 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
 
     @Resource
     private TaskMapper taskMapper;
+
+    @Resource
+    private UserMapper userMapper;
 
     @Resource
     private String filePathBySystem;
@@ -352,7 +357,7 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
     }
 
     @Override
-    public IPage<Batch> selectPageByCourseId(Page<Batch> pageParam, BatchQueryVo batchQueryVo) {
+    public IPage<Batch> selectPageIsCommit(Page<Batch> pageParam, BatchQueryVo batchQueryVo) {
         Course belongCourse = courseMapper.selectById(batchQueryVo.getBelongCourseId());
         if (Objects.isNull(belongCourse)) {
             throw new GlobalBusinessException(800, "该课程不存在");
@@ -415,6 +420,23 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
 //            }
 //        }
 
+        return batchIPage;
+    }
+
+    @Override
+    public IPage<Batch> selectPageIsCommitAndCount(Page<Batch> pageParam, BatchQueryVo batchQueryVo) {
+        IPage<Batch> batchIPage = this.selectPageIsCommit(pageParam, batchQueryVo);
+        List<Batch> records = batchIPage.getRecords();
+        records.forEach(batch -> {
+            // 根据批次id查询作业表，统计作业数量
+            QueryWrapper<Task> taskQueryWrapper = new QueryWrapper<>();
+            taskQueryWrapper.eq("belong_batch_id", batch.getId());
+            Long personCount = taskMapper.selectCount(taskQueryWrapper);
+            batch.setPersonCount(personCount);
+            // 查询用户总人数，不包括系统管理员
+            Long totalCount = userMapper.selectCount(new QueryWrapper<User>().ne("id",1));
+            batch.setTotalCount(totalCount);
+        });
         return batchIPage;
     }
 }

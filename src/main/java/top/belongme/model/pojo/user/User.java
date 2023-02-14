@@ -11,6 +11,7 @@ import top.belongme.model.pojo.Menu;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
@@ -34,8 +35,6 @@ public class User implements Serializable {
     private String password;
     private String name;
     private String studentNumber;
-//    @TableField(exist = false)
-//    private List<Menu> menuList;
     private Integer roleId;
     @TableField(exist = false)
     private String roleName;

@@ -26,18 +26,14 @@ public class Menu implements Serializable {
     private Long id;
     private Long parentId;
     private String name;
-
     private Integer type;
-
     private String path;
     private String component;
     private String perms;
     private String icon;
     private Integer sortValue;
     private Integer status;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", locale = "zh")
     private Date createTime;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", locale = "zh")
     private Date updateTime;
     private Integer isDeleted;
 }

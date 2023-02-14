@@ -1,18 +1,13 @@
 package top.belongme;
 
-import net.lingala.zip4j.ZipFile;
-import net.lingala.zip4j.exception.ZipException;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import top.belongme.mapper.BatchMapper;
-import top.belongme.model.pojo.Batch;
+
 
 import javax.annotation.Resource;
-import java.io.File;
-import java.text.SimpleDateFormat;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.List;
+
 
 /**
  * @Title: TestFile
@@ -25,5 +20,12 @@ import java.util.List;
 public class TestFile {
     @Resource
     private BatchMapper batchMapper;
+    @Resource
+    private PasswordEncoder passwordEncoder;
 
+    @Test
+    void testPassword() {
+        String encode = passwordEncoder.encode("123");
+        System.out.println(encode);
+    }
 }

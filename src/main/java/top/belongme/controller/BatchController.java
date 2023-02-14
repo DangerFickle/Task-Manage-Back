@@ -60,13 +60,31 @@ public class BatchController {
      */
     @PreAuthorize("hasAuthority('job:batch:select')")
     @GetMapping("listPageIsCommit/{page}/{limit}")
-    public Result<IPage<Batch>> getBatchListByCourseId(@PathVariable Long page,
+    public Result<IPage<Batch>> getBatchListIsCommit(@PathVariable Long page,
                                                      @PathVariable Long limit,
                                                      BatchQueryVo batchQueryVo) {
         //创建page对象
         Page<Batch> pageParam = new Page<>(page, limit);
         //调用service方法
-        IPage<Batch> pageModel = batchService.selectPageByCourseId(pageParam, batchQueryVo);
+        IPage<Batch> pageModel = batchService.selectPageIsCommit(pageParam, batchQueryVo);
+        return new Result<>(200, "请求成功", pageModel);
+    }
+
+    /**
+     * TODO 获取批次列表，并设置该用户是否已提交对应批次，加入人数情况，分页查询 + 模糊查询
+     *
+     * @Author DengChao
+     * @Date 2023/2/14 11:04
+     */
+    @PreAuthorize("hasAuthority('job:batch:select')")
+    @GetMapping("listPageIsCommitAndCount/{page}/{limit}")
+    public Result<IPage<Batch>> getBatchListIsCommitAndCount(@PathVariable Long page,
+                                                     @PathVariable Long limit,
+                                                     BatchQueryVo batchQueryVo) {
+        //创建page对象
+        Page<Batch> pageParam = new Page<>(page, limit);
+        //调用service方法
+        IPage<Batch> pageModel = batchService.selectPageIsCommitAndCount(pageParam, batchQueryVo);
         return new Result<>(200, "请求成功", pageModel);
     }
 

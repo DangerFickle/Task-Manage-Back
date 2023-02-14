@@ -3,8 +3,16 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="top.belongme.mapper.UserMapper">
-<!--    <resultMap id="userMap" type="top.belongme.model.pojo.user.User" autoMapping="true"></resultMap>-->
-    <select id="getUserByCreatorId" resultType="java.lang.String">
-        select name from job_user where id = #{creatorId}
+    <resultMap id="userMap" type="top.belongme.model.pojo.user.User" autoMapping="true"/>
+    <select id="getNoCommitUserList" resultMap="userMap">
+        select id, name, student_number
+        from job_user
+        where id not in (select uploader_id
+                         from job_task
+                         where belong_batch_id = #{vo.belongBatchId})
+        and id not in (1)
+        <if test="vo.studentName != null">
+            and name like "%"#{vo.studentName}"%"
+        </if>
     </select>
 </mapper>
