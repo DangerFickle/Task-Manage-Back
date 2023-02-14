@@ -1,6 +1,14 @@
 server:
   port: 20233
 spring:
+  sql:
+    init:
+      continue-on-error: true
+      schema-locations:
+        - classpath:/sql/job_manage-schema.sql
+      mode: always
+      data-locations:
+        - classpath:/sql/job_manage-data.sql
   datasource:
     url: jdbc:mysql://localhost:3306/job_manage?characterEncoding=utf-8&serverTimezone=Asia/Shanghai
     username: root

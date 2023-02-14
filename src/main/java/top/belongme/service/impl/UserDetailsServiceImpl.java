@@ -33,7 +33,7 @@ public class UserDetailsServiceImpl implements UserDetailsService {
         User user = userMapper.selectOne(wrapper);
         //如果查询不到数据就通过抛出异常来给出提示
         if (Objects.isNull(user)) {
-            throw new GlobalBusinessException(800, "用户名或密码错误");
+            throw new GlobalBusinessException(401, "用户名或密码错误");
         }
         //TODO 根据用户查询权限信息 添加到LoginUser中
         // 获取该用户的角色所对应的所有菜单
