@@ -7,8 +7,6 @@ import top.belongme.model.pojo.Batch;
 import top.belongme.model.result.Result;
 import top.belongme.model.vo.BatchQueryVo;
 
-import java.util.List;
-
 /**
  * @Title: BatchService
  * @ProjectName JobManage-Back

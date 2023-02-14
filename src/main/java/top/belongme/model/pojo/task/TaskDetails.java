@@ -1,5 +1,7 @@
 package top.belongme.model.pojo.task;
 
+import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 
@@ -14,6 +16,7 @@ import java.util.Date;
  */
 @Data
 public class TaskDetails {
+    @TableId
     private String taskId;
     private String studentName;
     private String studentNumber;

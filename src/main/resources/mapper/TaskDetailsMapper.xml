@@ -13,7 +13,7 @@
         join job_course jc on jb.belong_course_id = jc.id
         <where>
             <if test="vo.studentName != null">
-                and ju.name like "%"#{vo.studentName}"%"
+                and ju.name like CONCAT('%',#{vo.studentName},'%')
             </if>
             and jt.belong_batch_id = #{vo.belongBatchId}
         </where>

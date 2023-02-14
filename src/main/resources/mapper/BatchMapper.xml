@@ -38,16 +38,16 @@
         join job_user ju2 on jb.modifier_id = ju2.id
         <where>
             <if test="vo.batchName != null">
-                and jb.batch_name like "%"#{vo.batchName}"%"
+                and jb.batch_name like CONCAT('%',#{vo.batchName},'%')
             </if>
             <if test="vo.description != null">
-                and jb.description like "%"#{vo.description}"%"
+                and jb.description like CONCAT('%',#{vo.description},'%')
             </if>
             <if test="vo.creatorName != null">
-                and ju1.name like "%"#{vo.creatorName}"%"
+                and ju1.name like CONCAT('%',#{vo.creatorName},'%')
             </if>
             <if test="vo.modifierName != null">
-                and ju2.name like "%"#{vo.modifierName}"%"
+                and ju2.name like CONCAT('%',#{vo.modifierName},'%')
             </if>
             and jb.belong_course_id = #{vo.belongCourseId}
         </where>

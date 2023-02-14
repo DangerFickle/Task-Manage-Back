@@ -5,12 +5,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.stereotype.Component;
+import top.belongme.model.result.Result;
 import top.belongme.utils.WebUtils;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import top.belongme.model.result.Result;
 
 @Component
 public class AuthenticationEntryPointImpl implements AuthenticationEntryPoint {

@@ -9,11 +9,8 @@ import top.belongme.mapper.BatchMapper;
 import top.belongme.mapper.CourseMapper;
 import top.belongme.mapper.TaskDetailsMapper;
 import top.belongme.model.pojo.Batch;
-import top.belongme.model.pojo.Course;
 import top.belongme.model.pojo.task.TaskDetails;
 import top.belongme.model.vo.TaskDetailsQueryVo;
-import top.belongme.service.BatchService;
-import top.belongme.service.CourseService;
 import top.belongme.service.TaskDetailsService;
 
 import javax.annotation.Resource;

@@ -1,6 +1,7 @@
 package top.belongme.model.pojo;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;
 
@@ -16,6 +17,7 @@ import java.util.Date;
  */
 @Data
 public class Batch {
+    @TableId
     private String id;
     @NotBlank(message = "批次名称不能为空")
     private String batchName; // 批次名称

@@ -1,18 +1,12 @@
 package top.belongme.service;
 
-import com.baomidou.mybatisplus.core.metadata.IPage;
-import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
-import net.lingala.zip4j.exception.ZipException;
 import org.springframework.web.multipart.MultipartFile;
 import top.belongme.model.pojo.task.Task;
 import top.belongme.model.result.Result;
-import top.belongme.model.vo.TaskDetailsQueryVo;
-import top.belongme.model.vo.TaskQueryVo;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 
 
 /**

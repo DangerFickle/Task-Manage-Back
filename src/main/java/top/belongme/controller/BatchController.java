@@ -1,6 +1,5 @@
 package top.belongme.controller;
 
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -8,16 +7,12 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import top.belongme.exception.GlobalBusinessException;
 import top.belongme.model.pojo.Batch;
-import top.belongme.model.pojo.Course;
-import top.belongme.model.pojo.task.TaskDetails;
 import top.belongme.model.result.Result;
 import top.belongme.model.vo.BatchQueryVo;
-import top.belongme.model.vo.CourseQueryVo;
 import top.belongme.service.BatchService;
 
 import javax.annotation.Resource;
 import javax.validation.Valid;
-import java.util.List;
 import java.util.Objects;
 
 /**

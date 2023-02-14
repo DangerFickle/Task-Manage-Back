@@ -1,6 +1,7 @@
 package top.belongme.model.pojo.task;
 
 import com.baomidou.mybatisplus.annotation.TableField;
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 import top.belongme.model.pojo.Batch;
 import top.belongme.model.pojo.user.User;
@@ -16,6 +17,7 @@ import java.util.Date;
  */
 @Data
 public class Task {
+    @TableId
     private String id;
     private String fileName;
     private String filePath;

@@ -23,16 +23,16 @@
         join job_user t3 on t1.modifier_id = t3.id
         <where>
             <if test="vo.courseName != null">
-                and course_name like "%"#{vo.courseName}"%"
+                and course_name like CONCAT('%',#{vo.courseName},'%')
             </if>
             <if test="vo.description != null">
-                and description like "%"#{vo.description}"%"
+                and description like CONCAT('%',#{vo.description},'%')
             </if>
             <if test="vo.creatorName != null">
-                and t2.name like "%"#{vo.creatorName}"%"
+                and t2.name like CONCAT('%',#{vo.creatorName},'%')
             </if>
             <if test="vo.modifierName != null">
-                and t3.name like "%"#{vo.modifierName}"%"
+                and t3.name like CONCAT('%',#{vo.modifierName},'%')
             </if>
             and t1.is_deleted = 0
         </where>

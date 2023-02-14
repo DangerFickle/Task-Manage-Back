@@ -1,5 +1,5 @@
 server:
-  port: 8888
+  port: 20233
 spring:
   datasource:
     url: jdbc:mysql://localhost:3306/job_manage?characterEncoding=utf-8&serverTimezone=Asia/Shanghai
@@ -19,7 +19,6 @@ spring:
     # 设置时区为东八区，否则获取到前端传入的时间会出现时区差8小时的问题
     time-zone: GMT+8
     date-format: "yyyy-MM-dd HH:mm:ss"
-    locale: zh_CN
   mail:
     host: smtp.qq.com
     username: csgzs@foxmail.com

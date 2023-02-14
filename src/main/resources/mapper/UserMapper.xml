@@ -12,7 +12,7 @@
                          where belong_batch_id = #{vo.belongBatchId})
         and id not in (1)
         <if test="vo.studentName != null">
-            and name like "%"#{vo.studentName}"%"
+            and name like CONCAT('%',#{vo.studentName},'%')
         </if>
     </select>
 </mapper>

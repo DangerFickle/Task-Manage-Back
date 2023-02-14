@@ -1,5 +1,6 @@
 package top.belongme.model.pojo;
 
+import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 import java.util.Date;
@@ -13,6 +14,7 @@ import java.util.Date;
  */
 @Data
 public class Role {
+    @TableId
     private String id;
     private String roleName;
     private String roleCode;
