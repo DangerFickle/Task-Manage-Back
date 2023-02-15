@@ -1,5 +1,5 @@
 server:
-  port: 20233
+  port: 20232
 spring:
   sql:
     init:
