@@ -175,18 +175,23 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
 
     @Override
     public void getTaskFile(String taskId, HttpServletResponse response) throws IOException {
+        // 通过响应头通知前端异常信息
+        response.setHeader("Access-Control-Expose-Headers","exception");
         Task task = taskMapper.selectById(taskId);
         if (Objects.isNull(task)) {
+            response.setHeader("exception", "task not exist");
             throw new GlobalBusinessException(800, "该作业不存在");
         }
         // 查询该作业所属的批次是否已截止，已截止才可以下载
         Batch batch = batchMapper.selectById(task.getBelongBatchId());
         if (batch.getEndTime().after(new Date())) {
+            response.setHeader("exception", "task batch not end");
             throw new GlobalBusinessException(800, "所属批次还未截止，无法下载");
         }
 
         File taskFile = new File(task.getFilePath());
         if (!taskFile.exists()) {
+            response.setHeader("exception", "task file not exist");
             throw new GlobalBusinessException(800, "该作业文件不存在");
         }
         //在vue的response中显示Content-Disposition
