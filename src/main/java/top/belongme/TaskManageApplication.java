@@ -17,8 +17,8 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 @SpringBootApplication
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @MapperScan("top.belongme.mapper")
-public class JobManageApplication {
+public class TaskManageApplication {
     public static void main(String[] args) {
-        SpringApplication.run(JobManageApplication.class);
+        SpringApplication.run(TaskManageApplication.class);
     }
 }
