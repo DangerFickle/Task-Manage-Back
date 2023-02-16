@@ -6,6 +6,7 @@ import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 import top.belongme.exception.GlobalBusinessException;
@@ -37,6 +38,7 @@ import java.util.Objects;
  * @Date 2023/2/1018:18
  */
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements TaskService {
     @Resource
     private BatchMapper batchMapper;
@@ -93,34 +95,33 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         if (Objects.isNull(originalFileName)) {
             throw new GlobalBusinessException(800, "获取上传的文件名失败");
         }
-        StringBuilder originalFileNameBuilder = new StringBuilder(originalFileName);
         // 获取文件扩展名
-        String fileExtension = originalFileNameBuilder.substring(originalFileNameBuilder.lastIndexOf("."));
-        // 根据学号和姓名拼接文件名
-        StringBuilder finalFileName = new StringBuilder();
-        finalFileName.append(loginUser.getUser().getStudentNumber())
-                .append(" ")
-                .append(loginUser.getUser().getName())
-                .append(fileExtension);
+        String fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
+        // 根据学号和姓名拼接文件名，学号+姓名+文件扩展名
+        String finalFileName = loginUser.getUser().getStudentNumber() + " " + loginUser.getUser().getName() + fileExtension;
+
+        // 拼接作业文件路径，所属批次的文件夹路径 + 作业文件名
+        String taskFilePath = belongBatch.getFolderPath() + File.separator + finalFileName;
+        // 拼接提交的作业文件路径
+        Task task = new Task();
+        // 设置作业所属批次id
+        task.setBelongBatchId(belongBatchId);
+        // 设置作业文件路径
+        task.setFilePath(taskFilePath);
+        // 设置作业文件名
+        task.setFileName(finalFileName);
+        // 设置提交人id为当前登陆的用户id
+        task.setUploaderId(loginUser.getUser().getId());
+        int insert = baseMapper.insert(task);
+        if (insert <= 0) {
+            throw new GlobalBusinessException(800, "作业提交失败");
+        }
 
         try {
             // 获取提交的作业文件输入流
             InputStream taskFileInputStream = uploadTaskFile.getInputStream();
-            // 拼接作业文件路径，所属批次的文件夹路径 + 作业文件名
-            String taskFilePath = belongBatch.getFolderPath() + File.separator + finalFileName;
             // 将作业文件输入流复制到所属批次文件夹
             FileUtils.copyInputStreamToFile(taskFileInputStream, new File(taskFilePath));
-            // 拼接提交的作业文件路径
-            Task task = new Task();
-            // 设置作业所属批次id
-            task.setBelongBatchId(belongBatchId);
-            // 设置作业文件路径
-            task.setFilePath(taskFilePath);
-            // 设置作业文件名
-            task.setFileName(finalFileName.toString());
-            // 设置提交人id为当前登陆的用户id
-            task.setUploaderId(loginUser.getUser().getId());
-            baseMapper.insert(task);
             return new Result(200, "作业提交成功");
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -159,12 +160,17 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
             throw new GlobalBusinessException(800, "您还没有提交过该批次呢");
         }
 
+        // 删除数据库中的记录
+        int delete1 = taskMapper.deleteById(task.getId());
+        if (delete1 <= 0) {
+            throw new GlobalBusinessException(800, "取消提交失败");
+        }
+
         // 删除作业文件
         File taskFile = new File(task.getFilePath());
         if (taskFile.exists()) {
             boolean delete = taskFile.delete();
             if (delete) {
-                taskMapper.deleteById(task.getId());
                 return new Result(200, "取消提交成功");
             } else {
                 throw new GlobalBusinessException(800, "删除作业文件失败");
@@ -176,7 +182,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
     @Override
     public void getTaskFile(String taskId, HttpServletResponse response) throws IOException {
         // 通过响应头通知前端异常信息
-        response.setHeader("Access-Control-Expose-Headers","exception");
+        response.setHeader("Access-Control-Expose-Headers", "exception");
         Task task = taskMapper.selectById(taskId);
         if (Objects.isNull(task)) {
             response.setHeader("exception", "task not exist");
@@ -229,7 +235,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
     @Override
     public void getBatchFile(String batchId, HttpServletResponse response) throws IOException {
         // 通过响应头通知前端异常信息
-        response.setHeader("Access-Control-Expose-Headers","exception");
+        response.setHeader("Access-Control-Expose-Headers", "exception");
         // 设置响应类型为文本
         Batch batch = batchMapper.selectById(batchId);
         if (Objects.isNull(batch)) {

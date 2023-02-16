@@ -25,6 +25,12 @@ public class UserDetailsServiceImpl implements UserDetailsService {
     @Resource
     private MenuMapper menuMapper;
 
+    /**
+     * TODO 根据用户名查询用户信息
+     *
+     * @Author DengChao
+     * @Date 2023/2/15 20:33
+     */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         //根据用户名查询用户信息

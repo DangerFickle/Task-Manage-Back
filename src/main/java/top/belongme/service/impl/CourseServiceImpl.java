@@ -34,6 +34,7 @@ import java.util.Objects;
  */
 @Slf4j
 @Service
+@Transactional(rollbackFor = Exception.class)
 public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> implements CourseService {
     @Resource
     private String filePathBySystem;
@@ -56,47 +57,63 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
         if (Objects.nonNull(oldCourse)) {
             throw new GlobalBusinessException(800, "课程已存在");
         }
+        // 根据课程名构建同名文件夹
         File courseFolder = new File(filePathBySystem + course.getCourseName());
+        // 获取当前登录用户
+        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        // 设置创建人和修改人
+        course.setCreatorId(loginUser.getUser().getId());
+        course.setModifierId(loginUser.getUser().getId());
+        // 设置课程文件夹路径
+        course.setFolderPath(courseFolder.getAbsolutePath());
+        // 插入课程
+        int insert = baseMapper.insert(course);
+        if (insert <= 0) {
+            // 根据课程名构建同名文件夹
+            throw new GlobalBusinessException(800, "课程创建失败");
+        }
+
         if (!courseFolder.exists()) {
             boolean isMakeDir = courseFolder.mkdirs();
             if (isMakeDir) {
-                LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-                course.setCreatorId(loginUser.getUser().getId());
-                course.setModifierId(loginUser.getUser().getId());
-                course.setFolderPath(courseFolder.getAbsolutePath());
-                int insert = baseMapper.insert(course);
-                if (insert > 0) {
-                    // 根据课程名构建同名文件夹
-                    return new Result(200, "课程创建成功");
-                }
+                return new Result(200, "课程创建成功");
             } else {
                 throw new GlobalBusinessException(800, "课程对应的文件夹创建失败");
             }
         } else {
             throw new GlobalBusinessException(800, "课程对应的文件夹已存在，有人在程序运行的目录手动创建了同名文件夹！");
         }
-        throw new GlobalBusinessException(800, "课程创建失败");
     }
 
     @Override
-    public Result deleteCourse(String id) {
-        List<Batch> belongCourseList = batchMapper.selectList(new QueryWrapper<Batch>().eq("belong_course_id", id));
+    public Result deleteCourse(String courseId) {
+        List<Batch> belongCourseList = batchMapper.selectList(new QueryWrapper<Batch>().eq("belong_course_id", courseId));
         if (!belongCourseList.isEmpty()) {
             throw new GlobalBusinessException(800, "该课程下存在未删除的批次，无法删除");
         }
-
-        Course course = baseMapper.selectById(id);
-        if (Objects.nonNull(course)) {
-            File courseFolder = new File(course.getFolderPath());
-            courseFolder.delete();
-            int delete = baseMapper.deleteById(id);
-            if (delete > 0) {
-                return new Result(200, "课程删除成功");
-            }
-        } else {
+        // 查询课程
+        Course course = baseMapper.selectById(courseId);
+        if (Objects.isNull(course)) {
             throw new GlobalBusinessException(800, "课程不存在");
         }
-        throw new GlobalBusinessException(800, "课程删除失败");
+
+        // 删除数据库中的课程记录
+        int deleteDB = baseMapper.deleteById(courseId);
+        if (deleteDB <= 0) {
+            throw new GlobalBusinessException(800, "课程删除失败");
+        }
+
+        File courseFolder = new File(course.getFolderPath());
+        if (courseFolder.exists()) {
+            boolean deleteFile = courseFolder.delete();
+            if (!deleteFile) {
+                throw new GlobalBusinessException(800, "课程对应的文件夹删除失败");
+            }
+            return new Result(200, "课程删除成功");
+        } else {
+            throw new GlobalBusinessException(800, "课程对应的文件夹不存在");
+        }
+
     }
 
     /**
@@ -106,7 +123,6 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
      * @Date 2023/2/8 17:45
      */
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public Result updateCourse(Course course) {
         Course oldCourse = baseMapper.selectById(course.getId());
         if (Objects.isNull(oldCourse)) {
@@ -208,17 +224,4 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
         }
     }
 
-    @Override
-    public Result deleteBatchByIds(List<String> ids) {
-        // 根据ids获取对应课程
-        List<Course> courseList = baseMapper.selectBatchIds(ids);
-        courseList.forEach(course -> {
-            // 删除课程对应的文件夹
-            File courseFolder = new File(course.getFolderPath());
-            courseFolder.delete();
-            // 删除课程
-            baseMapper.deleteById(course.getId());
-        });
-        return new Result(200, "批量删除成功");
-    }
 }

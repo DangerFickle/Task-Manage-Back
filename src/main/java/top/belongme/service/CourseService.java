@@ -27,5 +27,4 @@ public interface CourseService extends IService<Course> {
 
     Result updateStatus(String id, Integer status);
 
-    Result deleteBatchByIds(List<String> ids);
 }

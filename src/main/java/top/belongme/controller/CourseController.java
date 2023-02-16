@@ -90,17 +90,6 @@ public class CourseController {
         return courseService.deleteCourse(id);
     }
 
-    /**
-     * TODO 批量删除课程
-     *
-     * @Author DengChao
-     * @Date 2023/2/9 10:54
-     */
-//    @PreAuthorize("hasAuthority('job:course:delete')")
-//    @DeleteMapping("/deleteBatch")
-    public Result deleteBatchByIds(@RequestBody List<String> ids) {
-        return courseService.deleteBatchByIds(ids);
-    }
 
     /**
      * TODO 更新课程信息
