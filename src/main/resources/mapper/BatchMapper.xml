@@ -23,7 +23,6 @@
         jb.batch_name,
         jb.description,
         jb.end_time,
-#         jb.folder_path,
         jb.belong_course_id,
         jc.course_name as belong_course_name,
         jb.creator_id,
