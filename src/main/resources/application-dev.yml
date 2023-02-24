@@ -19,8 +19,10 @@ spring:
   mail:
     host: smtp.qq.com
     username: csgzs@foxmail.com
-    password: dlqalcdzhwdfdgfg
+    password: lbxksktfjusrdgij
     default-encoding: UTF-8
+    # 配置邮件发送者昵称
+    nickname: "嗨嗐嗨作业提交管理系统"
     #其他参数
     properties:
       mail:
@@ -31,7 +33,7 @@ spring:
             enable: false
             required: false
           #开启debug模式，这样邮件发送过程的日志会在控制台打印出来，方便排查错误
-        debug: true
+        debug: false
   mvc:
     servlet:
       load-on-startup: 1

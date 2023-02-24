@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
@@ -37,6 +38,7 @@ import java.util.Objects;
  * @Date 2023/2/915:30
  */
 @Service
+@Slf4j
 @Transactional(rollbackFor = Exception.class)
 public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements BatchService {
 
@@ -67,12 +69,14 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
     public Result addBatchAndFolderPath(Batch batch) {
         Batch oldBatch = baseMapper.selectOne(new QueryWrapper<Batch>().eq("batch_name", batch.getBatchName()).eq("belong_course_id", batch.getBelongCourseId()));
         if (Objects.nonNull(oldBatch)) {
+            log.error("批次创建失败，因为即将添加的批次已经存在");
             throw new GlobalBusinessException(800, "批次已存在");
         }
 
         // 获取所属课程
         Course course = courseMapper.selectById(batch.getBelongCourseId());
         if (Objects.isNull(course)) {
+            log.error("批次创建失败，因为批次所属的课程不存在");
             throw new GlobalBusinessException(800, "课程不存在");
         }
 
@@ -81,6 +85,7 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
         File batchFolder = new File(batchFolderName);
         boolean mkdirs = batchFolder.mkdirs();
         if (!mkdirs) {
+            log.error("批次创建失败，因为批次对应的文件夹创建失败");
             throw new GlobalBusinessException(800, "批次文件夹创建失败");
         }
         batch.setFolderPath(batchFolderName);
@@ -92,8 +97,11 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
         batch.setModifierId(loginUser.getUser().getId());
         int insert = baseMapper.insert(batch);
         if (insert > 0) {
+            // 打印日志
+            log.info("管理员【{}】，在【{}】课程下创建了一个批次：【{}】", loginUser.getUser().getName(), course.getCourseName(), batch.getBatchName());
             return new Result(200, "批次添加成功");
         } else {
+            log.error("批次创建失败，因为向数据库中插入记录失败");
             throw new GlobalBusinessException(800, "批次添加失败");
         }
     }
@@ -108,10 +116,12 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
     public IPage<Batch> selectPage(Page<Batch> pageParam, BatchQueryVo batchQueryVo) {
         Course course = courseMapper.selectById(batchQueryVo.getBelongCourseId());
         if (Objects.isNull(course)) {
+            log.info("查询失败，因为传入的所属课程不存在");
             throw new GlobalBusinessException(800, "该课程不存在");
         }
 
         if (course.getStatus() == 0) {
+            log.info("查询失败，因为传入的所属课程已经被禁用");
             throw new GlobalBusinessException(800, "该课程已被禁用");
         }
 
@@ -145,6 +155,7 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
         // 获取原批次信息，判断批次是否存在
         Batch oldBatch = baseMapper.selectById(batch.getId());
         if (Objects.isNull(oldBatch)) {
+            log.error("更新批次失败，因为即将更新的批次不存在");
             throw new GlobalBusinessException(800, "批次不存在");
         }
 
@@ -182,6 +193,7 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
                 // 修改文件夹名称
                 boolean renameTo = oldBatchFolder.renameTo(newBatchFolder);
                 if (!renameTo) {
+                    log.error("更新批次失败，因为即将更新的批次文件夹重命名失败");
                     throw new GlobalBusinessException(800, "批次文件夹重命名失败");
                 }
                 /*
@@ -192,6 +204,7 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
                 oldBatch.setFolderPath(newBatchFolderPath);
                 isModify = true;
             } else {
+                log.error("更新批次失败，因为向数据库中更新数据失败");
                 throw new GlobalBusinessException(800, "批次修改失败");
             }
         } else {
@@ -224,21 +237,23 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
                     task.setFilePath(batchUpdateBelongCourse.getFolderPath() + File.separator + task.getFileName());
                     int updateTask = taskMapper.updateById(task);
                     if (updateTask <= 0) {
+                        log.error("更新批次失败，因为向数据库中更新批次下的作业失败");
                         throw new GlobalBusinessException(800, "批次下的作业修改失败");
                     }
                 });
             } else {
+                log.error("更新批次失败，因为向数据库中更新批次失败");
                 throw new GlobalBusinessException(800, "批次修改失败");
             }
             // 构建原批次文件夹路径，要移动到新新所属课程的文件夹下
             File oldBatchFolder = new File(oldBatch.getFolderPath());
             try {
-
                 // 将原批次文件夹移动到新所属课程的文件夹下
                 FileUtils.moveDirectoryToDirectory(oldBatchFolder, newBelongCourseFolder, true);
                 // 如果所属课程修改成功，设置修改标志为true
                 isModify = true;
             } catch (IOException e) {
+                log.error("更新批次失败，因为批次文件夹移动失败");
                 throw new RuntimeException(e);
             }
         } else {
@@ -270,11 +285,14 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
             batch.setModifierId(loginUser.getUser().getId());
             int update = baseMapper.updateById(batch);
             if (update > 0) {
+                log.info("管理员【{}】，修改了【{}】课程下的【{}】批次", loginUser.getUser().getName(), oldBelongCourse.getCourseName(), oldBatch.getBatchName());
                 return new Result(200, "批次修改成功");
             } else {
+                log.error("更新批次失败，因为向数据库中更新批次失败");
                 throw new GlobalBusinessException(800, "批次修改失败");
             }
         } else {
+            log.warn("更新批次失败，因为传入的批次数据与原数据无差异");
             throw new GlobalBusinessException(800, "批次信息未发生变化");
         }
 
@@ -285,11 +303,13 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
         // 获取批次信息
         Batch batch = baseMapper.selectById(batchId);
         if (Objects.isNull(batch)) {
+            log.error("批次删除失败，因为传入的批次不存在");
             throw new GlobalBusinessException(800, "该批次不存在");
         }
         // 获取该批次下的作业，如果存在未删除的作业，则无法删除该批次
         List<Task> taskList = taskMapper.selectList(new QueryWrapper<Task>().eq("belong_batch_id", batch.getId()));
         if (!taskList.isEmpty()) {
+            log.error("批次删除失败，因为该批次下存在未删除的作业");
             throw new GlobalBusinessException(800, "该批次下存在未删除的作业，无法删除");
         }
 
@@ -301,11 +321,18 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
             // 如果批次文件夹存在，则删除
             try {
                 FileUtils.deleteDirectory(batchFolder);
+                // 获取当前登陆的用户
+                LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                // 获取批次的所属课程
+                Course course = courseMapper.selectById(batch.getBelongCourseId());
+                log.info("管理员【{}】，删除了【{}】课程下的【{}】批次", loginUser.getUser().getName(), course.getCourseName(), batch.getBatchName());
                 return new Result(200, "批次删除成功");
             } catch (IOException e) {
+                log.error("批次删除失败，因为该批次对应的文件夹删除失败");
                 throw new RuntimeException(e);
             }
         } else {
+            log.error("批次删除失败，因为数据库中的批次记录删除失败");
             throw new GlobalBusinessException(800, "批次删除失败");
         }
 
@@ -350,6 +377,10 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
         batch.setModifierId(loginUser.getUser().getId());
         int update = baseMapper.updateById(batch);
         if (update > 0) {
+            // 获取批次所属课程
+            Course course = courseMapper.selectById(oldBatch.getBelongCourseId());
+
+            log.info("管理员【{}】，更改了【{}】课程下【{}】批次的状态为【{}】", loginUser.getUser().getName(), course.getCourseName(), oldBatch.getBatchName(), status == 1 ? "已截止" : "未截止");
             return new Result(200, "批次状态更新成功");
         } else {
             throw new GlobalBusinessException(800, "批次状态更新失败");
@@ -360,9 +391,11 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
     public IPage<Batch> selectPageIsCommit(Page<Batch> pageParam, BatchQueryVo batchQueryVo) {
         Course belongCourse = courseMapper.selectById(batchQueryVo.getBelongCourseId());
         if (Objects.isNull(belongCourse)) {
+            log.error("查询是否可提交失败，因为传入的课程不存在");
             throw new GlobalBusinessException(800, "该课程不存在");
         }
         if (belongCourse.getStatus() == 0) {
+            log.error("查询是否可提交失败，因为传入的课程已被禁用");
             throw new GlobalBusinessException(800, "该课程已被禁用");
         }
 
@@ -432,10 +465,19 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
             QueryWrapper<Task> taskQueryWrapper = new QueryWrapper<>();
             taskQueryWrapper.eq("belong_batch_id", batch.getId());
             Long personCount = taskMapper.selectCount(taskQueryWrapper);
+            // 设置已交人数
             batch.setPersonCount(personCount);
             // 查询用户总人数，不包括系统管理员
             Long totalCount = userMapper.selectCount(new QueryWrapper<User>().ne("id",1));
+            // 设置用户总人数
             batch.setTotalCount(totalCount);
+
+            // 获取批次文件夹
+            File batchFolder = new File(batch.getFolderPath());
+            // 获取文件夹大小
+            long sizeOfBatchDirectory = FileUtils.sizeOfDirectory(batchFolder);
+            // 设置文件夹大小
+            batch.setSizeOfDirectory(sizeOfBatchDirectory);
         });
         return batchIPage;
     }

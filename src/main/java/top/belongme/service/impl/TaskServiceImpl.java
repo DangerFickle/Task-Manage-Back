@@ -2,6 +2,7 @@ package top.belongme.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -13,11 +14,15 @@ import top.belongme.exception.GlobalBusinessException;
 import top.belongme.mapper.BatchMapper;
 import top.belongme.mapper.CourseMapper;
 import top.belongme.mapper.TaskMapper;
+import top.belongme.mapper.UserMapper;
 import top.belongme.model.pojo.Batch;
 import top.belongme.model.pojo.Course;
+import top.belongme.model.pojo.Email;
 import top.belongme.model.pojo.task.Task;
 import top.belongme.model.pojo.user.LoginUser;
+import top.belongme.model.pojo.user.User;
 import top.belongme.model.result.Result;
+import top.belongme.service.SendMailService;
 import top.belongme.service.TaskService;
 
 import javax.annotation.Resource;
@@ -25,6 +30,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URLEncoder;
 import java.nio.file.Files;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
@@ -38,6 +44,7 @@ import java.util.Objects;
  * @Date 2023/2/1018:18
  */
 @Service
+@Slf4j
 @Transactional(rollbackFor = Exception.class)
 public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements TaskService {
     @Resource
@@ -50,10 +57,20 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
     private CourseMapper courseMapper;
 
     @Resource
+    private UserMapper userMapper;
+
+    // 格林威治时间
+    @Resource
     private Date GMTDate;
 
     @Resource
     private String filePathBySystem;
+
+    @Resource
+    private SendMailService sendMailService;
+
+    @Resource
+    private SimpleDateFormat simpleDateFormat;
 
 
     /**
@@ -64,6 +81,11 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
      */
     @Override
     public Result commitTask(MultipartFile uploadTaskFile, String belongBatchId) {
+        // 限制提交大小为30MB
+        if (uploadTaskFile.getSize() > 30 * 1024 * 1024) {
+            throw new GlobalBusinessException(800, "作业文件不得超过30MB");
+        }
+
         Batch belongBatch = batchMapper.selectById(belongBatchId);
         if (Objects.isNull(belongBatch)) {
             throw new GlobalBusinessException(800, "该批次不存在，提交失败");
@@ -122,6 +144,35 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
             InputStream taskFileInputStream = uploadTaskFile.getInputStream();
             // 将作业文件输入流复制到所属批次文件夹
             FileUtils.copyInputStreamToFile(taskFileInputStream, new File(taskFilePath));
+            // 获取批次所属课程
+            Course course = courseMapper.selectById(belongBatch.getBelongCourseId());
+
+            // 判断用户是否设置了邮箱，如果设置了则发送邮件通知
+            if (Objects.nonNull(loginUser.getUser().getEmail())) {
+                // 给用户发送一封通知邮件
+                String commitDate = simpleDateFormat.format(new Date());
+                // 邮件标题
+                String subject = "作业提交成功通知";
+                // 正文模板
+                String emailText =
+                        """
+                                您的作业提交成功啦！
+                                课程：%s
+                                批次：%s
+                                提交人：%s
+                                提交时间：%s
+                                """.formatted(course.getCourseName(), belongBatch.getBatchName(), loginUser.getUser().getName(), commitDate);
+
+                Email email = new Email(loginUser.getUser().getEmail(), subject, emailText);
+                sendMailService.sendSimpleMail(email);
+            }
+
+            // 打印日志
+            log.info("【{}】作业提交成功，所属课程：{}，所属批次：{}", loginUser.getUser().getName(), course.getCourseName(), belongBatch.getBatchName());
+
+            // 通知管理员
+            this.noticeCommitDetail(course, belongBatch);
+
             return new Result(200, "作业提交成功");
         } catch (IOException e) {
             throw new RuntimeException(e);
@@ -171,6 +222,10 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         if (taskFile.exists()) {
             boolean delete = taskFile.delete();
             if (delete) {
+                // 获取所属课程
+                Course course = courseMapper.selectById(belongBatch.getBelongCourseId());
+                // 打印日志
+                log.info("【{}】取消提交成功，所属课程：{}，所属批次：{}", loginUser.getUser().getName(), course.getCourseName(), belongBatch.getBatchName());
                 return new Result(200, "取消提交成功");
             } else {
                 throw new GlobalBusinessException(800, "删除作业文件失败");
@@ -216,6 +271,14 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
             bufferedOutputStream = new BufferedOutputStream(response.getOutputStream());
             // 将文件流写入到response的输出流中
             FileCopyUtils.copy(bufferedInputStream, bufferedOutputStream);
+            // 获取当前登陆的用户
+            LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            // 获取所属课程
+            Course course = courseMapper.selectById(batch.getBelongCourseId());
+            // 获取作业的提交人
+            User uploader = userMapper.selectById(task.getUploaderId());
+            // 打印日志
+            log.info("管理员【{}】下载了：【{}】的【{}】批次下，【{}】的作业", loginUser.getUser().getName(), course.getCourseName(), batch.getBatchName(), uploader.getName());
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -234,6 +297,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
 
     @Override
     public void getBatchFile(String batchId, HttpServletResponse response) throws IOException {
+
         // 通过响应头通知前端异常信息
         response.setHeader("Access-Control-Expose-Headers", "exception");
         // 设置响应类型为文本
@@ -303,6 +367,11 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
             bufferedOutputStream = new BufferedOutputStream(response.getOutputStream());
             // 将文件流写入到response的输出流中
             FileCopyUtils.copy(bufferedInputStream, bufferedOutputStream);
+
+            // 获取当前登陆的用户
+            LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            // 打印日志
+            log.info("管理员【{}】，下载了：【{}】下的【{}】批次下所有作业", loginUser.getUser().getName(), course.getCourseName(), batch.getBatchName());
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
@@ -319,5 +388,58 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
             // 删除临时文件夹中的压缩包
             taskFilesZip.delete();
         }
+    }
+
+    private void noticeCommitDetail(Course course, Batch batch) {
+        // 查询管理员，不包含系统管理员
+        List<User> managerList = userMapper.selectList(new QueryWrapper<User>().eq("role_id", 2));
+
+        StringBuilder sendTo = new StringBuilder();
+        // 获取管理员的邮箱
+        for (User user : managerList) {
+            if (Objects.nonNull(user.getEmail())) {
+                sendTo.append(user.getEmail()).append(",");
+            }
+        }
+
+        // 如果收集管理员邮箱的StringBuilder长度为0，则不发送邮件
+        if (sendTo.length() == 0) {
+            return;
+        }
+
+        // 查询用户总数，不包含系统管理员
+        Long userCount = userMapper.selectCount(new QueryWrapper<User>().ne("id", 1));
+
+        // 查询已交人数
+        QueryWrapper<Task> qw = new QueryWrapper<>();
+        qw.eq("belong_batch_id", batch.getId());
+        Long alreadyCount = taskMapper.selectCount(qw);
+
+        if (alreadyCount == 20L || alreadyCount == 30L || alreadyCount == 40L || alreadyCount == 50L) {
+            // 邮件通知正文
+            String emailTemplate =
+                    """
+                            课程：%s
+                            批次：%s
+                            已交人数：%s
+                            网站地址：https://task.belongme.top
+                            """.formatted(course.getCourseName(), batch.getBatchName(), alreadyCount);
+            //发送邮件通知管理员
+            Email email = new Email(sendTo.toString(), "作业收集进度通知", emailTemplate);
+            sendMailService.sendSimpleMail(email);
+        } else if (alreadyCount.equals(userCount)) {
+            // 邮件通知正文
+            String emailTemplate =
+                    """
+                            课程：%s
+                            批次：%s
+                            作业已经收集完毕啦，快去下载吧！
+                            网站地址：https://task.belongme.top
+                            """.formatted(course.getCourseName(), batch.getBatchName());
+            //发送邮件通知管理员
+            Email email = new Email(sendTo.toString(), "作业收集进度通知", emailTemplate);
+            sendMailService.sendSimpleMail(email);
+        }
+
     }
 }

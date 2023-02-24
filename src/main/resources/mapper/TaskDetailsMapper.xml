@@ -4,7 +4,7 @@
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="top.belongme.mapper.TaskDetailsMapper">
     <select id="selectPage" resultType="top.belongme.model.pojo.task.TaskDetails">
-        select jt.id as task_id, ju.name as student_name, ju.student_number, jc.course_name as belong_course_name,
+        select jt.id as task_id, jt.file_path, ju.name as student_name, ju.student_number, jc.course_name as belong_course_name,
         jb.batch_name as belong_batch_name, jt.create_time, jb.end_time as belong_batch_end_time
         from job_task jt
         join job_user ju

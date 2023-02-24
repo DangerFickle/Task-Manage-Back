@@ -1,6 +1,7 @@
 package top.belongme.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -18,6 +19,7 @@ import java.util.List;
 import java.util.Objects;
 
 @Service
+@Slf4j
 public class UserDetailsServiceImpl implements UserDetailsService {
 
     @Resource

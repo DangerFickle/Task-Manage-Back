@@ -1,5 +1,6 @@
 package top.belongme.service.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -27,6 +28,7 @@ import java.util.concurrent.TimeUnit;
  * @Date 2023/2/714:40
  */
 @Service
+@Slf4j
 public class LoginServiceImpl implements LoginService {
     @Resource
     UserMapper userMapper;
@@ -57,7 +59,7 @@ public class LoginServiceImpl implements LoginService {
         //把token响应给前端
         HashMap<String, String> map = new HashMap<>();
         map.put("token", jwt);
-
+        log.info("【{}】登陆了系统", loginUser.getUser().getName());
         return new Result(200, "登陆成功", map);
     }
 
@@ -74,6 +76,7 @@ public class LoginServiceImpl implements LoginService {
         LoginUser loginUser = (LoginUser) authentication.getPrincipal();
         String userid = loginUser.getUser().getId();
         redisCache.deleteObject("login:" + userid);
+        log.info("【{}】登出了系统", loginUser.getUser().getName());
         return new Result(200, "退出成功");
     }
 }

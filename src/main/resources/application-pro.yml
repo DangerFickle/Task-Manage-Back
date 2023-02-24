@@ -1,6 +1,11 @@
 server:
   port: 20232
 spring:
+  servlet:
+    multipart:
+      # 限制上传文件大小
+      max-file-size: 50MB
+      max-request-size: 50MB
   datasource:
     url: jdbc:mysql://localhost:3306/job_manage?characterEncoding=utf-8&serverTimezone=Asia/Shanghai
     username: root
@@ -19,8 +24,10 @@ spring:
   mail:
     host: smtp.qq.com
     username: csgzs@foxmail.com
-    password: dlqalcdzhwdfdgfg
+    password: lbxksktfjusrdgij
     default-encoding: UTF-8
+    # 配置邮件发送者昵称
+    nickname: "嗨嗐嗨作业提交管理系统"
     #其他参数
     properties:
       mail:
@@ -31,7 +38,7 @@ spring:
             enable: false
             required: false
           #开启debug模式，这样邮件发送过程的日志会在控制台打印出来，方便排查错误
-        debug: true
+        debug: false
   mvc:
     servlet:
       load-on-startup: 1

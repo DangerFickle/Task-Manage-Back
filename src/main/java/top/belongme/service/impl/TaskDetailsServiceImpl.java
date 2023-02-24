@@ -3,6 +3,8 @@ package top.belongme.service.impl;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Service;
 import top.belongme.exception.GlobalBusinessException;
 import top.belongme.mapper.BatchMapper;
@@ -14,6 +16,7 @@ import top.belongme.model.vo.TaskDetailsQueryVo;
 import top.belongme.service.TaskDetailsService;
 
 import javax.annotation.Resource;
+import java.io.File;
 import java.util.Date;
 import java.util.Objects;
 
@@ -25,12 +28,10 @@ import java.util.Objects;
  * @Date 2023/2/1220:08
  */
 @Service
+@Slf4j
 public class TaskDetailsServiceImpl extends ServiceImpl<TaskDetailsMapper, TaskDetails> implements TaskDetailsService {
     @Resource
     private Date GMTDate;
-
-    @Resource
-    private CourseMapper courseMapper;
 
     @Resource
     private BatchMapper batchMapper;
@@ -40,6 +41,7 @@ public class TaskDetailsServiceImpl extends ServiceImpl<TaskDetailsMapper, TaskD
         // 查询该批次是否存在
         Batch belongBatch = batchMapper.selectById(taskDetailsQueryVo.getBelongBatchId());
         if (Objects.isNull(belongBatch)) {
+            log.error("作业详情查询失败，因为传入的批次不存在");
             throw new GlobalBusinessException(800, "该批次不存在");
         }
 
@@ -58,6 +60,13 @@ public class TaskDetailsServiceImpl extends ServiceImpl<TaskDetailsMapper, TaskD
                     taskDetails.setIsEnd(0);
                 }
             }
+
+            // 获取作业文件
+            File taskFile = new File(taskDetails.getFilePath());
+            // 获取作业文件大小
+            long taskFileSize = FileUtils.sizeOf(taskFile);
+            // 设置作业文件大小
+            taskDetails.setFileSize(taskFileSize);
         });
 
         return taskDetailsIPage;

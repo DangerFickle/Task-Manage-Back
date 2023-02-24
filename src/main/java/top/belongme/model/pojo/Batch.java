@@ -44,6 +44,8 @@ public class Batch {
     private Long personCount; // 批次已交人数
     @TableField(exist = false)
     private Long totalCount; // 总人数
+    @TableField(exist = false)
+    private Long sizeOfDirectory; // 批次文件夹内的文件大小
     private Date createTime;
     private Date updateTime;
 

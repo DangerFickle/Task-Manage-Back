@@ -3,6 +3,7 @@ package top.belongme.service.impl;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ import java.util.Objects;
  * @Date 2023/2/718:32
  */
 @Service
+@Slf4j
 public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
     @Resource
     private RoleMapper roleMapper;
@@ -59,7 +61,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (Objects.isNull(batch)) {
             throw new GlobalBusinessException(800, "该批次不存在");
         }
-
+        log.info("获取未交人员列表成功");
         return baseMapper.getNoCommitUserList(pageParam, taskDetailsQueryVo);
     }
 

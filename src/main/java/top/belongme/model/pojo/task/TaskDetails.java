@@ -24,6 +24,10 @@ public class TaskDetails {
     private String belongBatchName;
     // 所属批次是否已截止
     private Integer isEnd;
+    private Long fileSize;
+    // 作业的文件路径，此字段不需要传递给前端
+    @JsonIgnore
+    private String filePath;
     // 所属批次截止时间，此字段不需要传递给前端
     @JsonIgnore
     private Date belongBatchEndTime;

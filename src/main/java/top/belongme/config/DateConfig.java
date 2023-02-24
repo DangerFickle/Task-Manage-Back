@@ -30,4 +30,15 @@ public class DateConfig {
     }
 
 
+    /**
+     * TODO
+     *
+     * @Author DengChao
+     * @Date 2023/2/20 14:59
+     */
+    @Bean
+    public SimpleDateFormat simpleDateFormat () {
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+    }
+
 }
