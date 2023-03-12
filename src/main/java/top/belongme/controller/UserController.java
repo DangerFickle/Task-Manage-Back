@@ -7,11 +7,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import top.belongme.exception.GlobalBusinessException;
+import top.belongme.model.pojo.Course;
 import top.belongme.model.pojo.user.User;
 import top.belongme.model.result.Result;
-import top.belongme.model.vo.EmailVo;
-import top.belongme.model.vo.ResetPasswordVo;
-import top.belongme.model.vo.TaskDetailsQueryVo;
+import top.belongme.model.vo.*;
 import top.belongme.service.UserService;
 import top.belongme.utils.JwtUtil;
 
@@ -48,7 +47,7 @@ public class UserController {
     }
 
     /**
-     * TODO 更新用户信息
+     * TODO 修改密码
      *
      * @Author DengChao
      * @Date 2023/2/14 14:33
@@ -62,6 +61,12 @@ public class UserController {
         return userService.resetPassword(resetPasswordVo);
     }
 
+    /**
+     * TODO 修改邮箱
+     *
+     * @Author DengChao
+     * @Date 2023/3/8 15:36
+     */
     @PreAuthorize("hasAuthority('job:personal:update')")
     @PutMapping("/updateEmail")
     public Result resetPassword(@Validated EmailVo emailVo, BindingResult result) {
@@ -91,5 +96,70 @@ public class UserController {
         //调用service方法
         IPage<User> pageModel = userService.getNoCommitUserList(pageParam, taskDetailsQueryVo);
         return new Result<>(200, "请求成功", pageModel);
+    }
+
+    @PreAuthorize("hasAuthority('job:user:update')")
+    @GetMapping("/listPage/{page}/{limit}")
+    public Result<IPage<User>> getUserList(@PathVariable Long page,
+                                           @PathVariable Long limit,
+                                           UserVo userVo) {
+        //创建page对象
+        Page<User> pageParam = new Page<>(page, limit);
+        IPage<User> pageModel = userService.selectPage(pageParam, userVo);
+        return new Result<>(200, "请求成功", pageModel);
+    }
+
+    @PreAuthorize("hasAuthority('job:user:insert')")
+    @PostMapping("/add")
+    public Result addUser(@RequestBody @Valid User user, BindingResult result) {
+        if (result != null && result.hasErrors()) {
+            throw new GlobalBusinessException(800, Objects.requireNonNull(result.getFieldError()).getDefaultMessage());
+        }
+        return userService.saveUser(user);
+    }
+
+    @PreAuthorize("hasAuthority('job:user:update')")
+    @PutMapping("/update")
+    public Result updateUser(@RequestBody @Valid User user, BindingResult result) {
+        if (result != null && result.hasErrors()) {
+            throw new GlobalBusinessException(800, Objects.requireNonNull(result.getFieldError()).getDefaultMessage());
+        }
+        return userService.updateUser(user);
+    }
+
+    /**
+     * TODO 获取指定用户的信息
+     *
+     * @Author DengChao
+     * @Date 2023/3/8 17:24
+     */
+    @PreAuthorize("hasAuthority('job:user:select')")
+    @GetMapping("/getUserById/{id}")
+    public Result<User> getUserById(@PathVariable("id") String userId) {
+        return userService.getUserById(userId);
+    }
+
+    /**
+     * TODO 删除指定用户
+     *
+     * @Author DengChao
+     * @Date 2023/3/9 15:15
+     */
+    @PreAuthorize("hasAuthority('job:user:delete')")
+    @DeleteMapping("/delete/{id}")
+    public Result deleteById(@PathVariable("id") String userId) {
+        return userService.deleteById(userId);
+    }
+
+    /**
+     * TODO 切换用户的可用性
+     *
+     * @Author DengChao
+     * @Date 2023/3/9 15:25
+     */
+    @PreAuthorize("hasAuthority('job:user:update')")
+    @PutMapping("/switchStatus/{id}")
+    public Result switchStatus(@PathVariable("id") String userId) {
+        return userService.switchStatus(userId);
     }
 }

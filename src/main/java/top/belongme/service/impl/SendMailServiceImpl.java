@@ -27,6 +27,9 @@ import javax.mail.internet.MimeMessage;
 import java.io.File;
 import java.util.Date;
 import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
 
 @Service
 @Slf4j
@@ -53,7 +56,7 @@ public class SendMailServiceImpl implements SendMailService {
 
 
     private void checkMail(Email email) {
-        Assert.notNull(email,"邮件请求不能为空");
+        Assert.notNull(email, "邮件请求不能为空");
         Assert.notNull(email.getSendTo(), "邮件收件人不能为空");
         Assert.notNull(email.getSubject(), "邮件主题不能为空");
         Assert.notNull(email.getText(), "邮件内容不能为空");
@@ -61,51 +64,59 @@ public class SendMailServiceImpl implements SendMailService {
 
     @Override
     public void sendSimpleMail(Email email) {
-        checkMail(email);
-        SimpleMailMessage message = new SimpleMailMessage();
-        //邮件发件人
-        message.setFrom(nickname+'<'+sendMailer+'>');
-        //邮件收件人 1或多个
-        message.setTo(email.getSendTo().split(","));
-        //邮件主题
-        message.setSubject(email.getSubject());
-        //邮件内容
-        message.setText(email.getText());
-        //邮件发送时间
-        message.setSentDate(new Date());
+        Thread emailThread = new Thread(() -> {
+            checkMail(email);
+            SimpleMailMessage message = new SimpleMailMessage();
+            //邮件发件人
+            message.setFrom(nickname + '<' + sendMailer + '>');
+            //邮件收件人 1或多个
+            message.setTo(email.getSendTo().split(","));
+            //邮件主题
+            message.setSubject(email.getSubject());
+            //邮件内容
+            message.setText(email.getText());
+            //邮件发送时间
+            message.setSentDate(new Date());
 
-        javaMailSender.send(message);
-        log.info("发送邮件成功:{}->{}",sendMailer,email.getSendTo());
+            javaMailSender.send(message);
+            log.info("发送邮件成功:{}->{}", sendMailer, email.getSendTo());
+        });
+        emailThread.setName("简单邮件发送线程-" + emailThread.getId());
+        emailThread.start();
     }
 
     @Override
     public void sendHtmlMail(Email email) {
-        checkMail(email);
-        MimeMessage message = javaMailSender.createMimeMessage();
-        try {
-            MimeMessageHelper helper = new MimeMessageHelper(message,true);
-            //邮件发件人
-            helper.setFrom(nickname+'<'+sendMailer+'>');
-            //邮件收件人 1或多个
-            helper.setTo(email.getSendTo().split(","));
-            //邮件主题
-            helper.setSubject(email.getSubject());
-            //邮件内容
-            helper.setText(email.getText(),true);
-            //邮件发送时间
-            helper.setSentDate(new Date());
+        Thread emainThread = new Thread(() -> {
+            checkMail(email);
+            MimeMessage message = javaMailSender.createMimeMessage();
+            try {
+                MimeMessageHelper helper = new MimeMessageHelper(message, true);
+                //邮件发件人
+                helper.setFrom(nickname + '<' + sendMailer + '>');
+                //邮件收件人 1或多个
+                helper.setTo(email.getSendTo().split(","));
+                //邮件主题
+                helper.setSubject(email.getSubject());
+                //邮件内容
+                helper.setText(email.getText(), true);
+                //邮件发送时间
+                helper.setSentDate(new Date());
 
-            String filePath = email.getFilePath();
-            if (StringUtils.hasText(filePath)) {
-                FileSystemResource file = new FileSystemResource(new File(filePath));
-                String fileName = filePath.substring(filePath.lastIndexOf(File.separator));
-                helper.addAttachment(fileName,file);
+                String filePath = email.getFilePath();
+                if (StringUtils.hasText(filePath)) {
+                    FileSystemResource file = new FileSystemResource(new File(filePath));
+                    String fileName = filePath.substring(filePath.lastIndexOf(File.separator));
+                    helper.addAttachment(fileName, file);
+                }
+                javaMailSender.send(message);
+                log.info("发送邮件成功:{}->{}", sendMailer, email.getSendTo());
+            } catch (MessagingException e) {
+                log.error("发送邮件时发生异常！", e);
             }
-            javaMailSender.send(message);
-            log.info("发送邮件成功:{}->{}",sendMailer,email.getSendTo());
-        } catch (MessagingException e) {
-            log.error("发送邮件时发生异常！",e);
-        }
+        });
+        emainThread.setName("HTML邮件发送线程-" + emainThread.getId());
+        emainThread.start();
     }
 
     @Override
@@ -144,18 +155,18 @@ public class SendMailServiceImpl implements SendMailService {
 
         String remindTemplate =
                 """
-                学习委员提醒您交作业啦！
-                课程：%s
-                批次：%s
-                请登陆系统提交您的作业
-                网站地址：https://task.belongme.top
-                """.formatted(course.getCourseName(), batch.getBatchName());
+                        学习委员提醒您交作业啦！
+                        课程：%s
+                        批次：%s
+                        请登陆系统提交您的作业
+                        网站地址：https://task.belongme.top
+                        """.formatted(course.getCourseName(), batch.getBatchName());
 
         Email email = new Email(user.getEmail(), "作业提交提醒", remindTemplate);
         // 发送邮件
         this.sendSimpleMail(email);
         log.info("邮件提醒【{}】成功", user.getName());
-        return new Result(200, "邮件提醒【%s】成功".formatted(user.getName()));
+        return new Result<>(200, "邮件提醒【%s】成功".formatted(user.getName()));
     }
 }
 

@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 import top.belongme.model.pojo.user.User;
 import top.belongme.model.vo.TaskDetailsQueryVo;
+import top.belongme.model.vo.UserVo;
 
 /**
  * @Title: UserMapper

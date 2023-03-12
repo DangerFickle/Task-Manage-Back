@@ -4,12 +4,14 @@ import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableLogic;
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
+import javax.validation.constraints.NotBlank;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -30,19 +32,19 @@ public class User implements Serializable {
     private String id;
     private String username;
     private String password;
+    @NotBlank(message = "学号不能为空")
     private String name;
+    @NotBlank(message = "学号不能为空")
     private String studentNumber;
-    private Integer roleId;
+    @NotBlank(message = "角色不能为空")
+    private String roleId;
     @TableField(exist = false)
     private String roleName;
-    @Email(message = "邮箱格式错误")
+//    @Email(message = "邮箱格式错误")
     private String email;
     private String avatar;
     private Integer status;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", locale = "zh")
     private Date createTime;
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss", locale = "zh")
     private Date updateTime;
-    @TableLogic
-    private Integer isDeleted;
+
 }

@@ -49,10 +49,14 @@ public class LoginServiceImpl implements LoginService {
         if (Objects.isNull(authenticate)) {
             throw new GlobalBusinessException(800, "用户名或密码错误");
         }
-        //使用userid生成token
+        // 获取用户信息
         LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
-
-        String userId = loginUser.getUser().getId().toString();
+        // 检查用户是否被禁用
+        if (loginUser.getUser().getStatus() == 1) {
+            throw new GlobalBusinessException(800, "您的账户已被禁用，请联系管理员");
+        }
+        //使用userid生成token
+        String userId = loginUser.getUser().getId();
         String jwt = JwtUtil.createJWT(userId);
         //authenticate存入redis，设置过期时间为半小时
         redisCache.setCacheObject("login:" + userId, loginUser,  30, TimeUnit.MINUTES);

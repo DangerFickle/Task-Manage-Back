@@ -1,5 +1,6 @@
 package top.belongme.service.impl;
 
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -7,22 +8,27 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import top.belongme.exception.GlobalBusinessException;
 import top.belongme.mapper.BatchMapper;
 import top.belongme.mapper.RoleMapper;
+import top.belongme.mapper.TaskMapper;
 import top.belongme.mapper.UserMapper;
 import top.belongme.model.pojo.Batch;
 import top.belongme.model.pojo.Role;
+import top.belongme.model.pojo.task.Task;
 import top.belongme.model.pojo.user.LoginUser;
 import top.belongme.model.pojo.user.User;
 import top.belongme.model.result.Result;
 import top.belongme.model.vo.EmailVo;
 import top.belongme.model.vo.ResetPasswordVo;
 import top.belongme.model.vo.TaskDetailsQueryVo;
+import top.belongme.model.vo.UserVo;
 import top.belongme.service.UserService;
 import top.belongme.utils.RedisCache;
 
 import javax.annotation.Resource;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -39,6 +45,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     private RoleMapper roleMapper;
     @Resource
     private BatchMapper batchMapper;
+
+    @Resource
+    private TaskMapper taskMapper;
+
     @Resource
     RedisCache redisCache;
     @Resource
@@ -135,5 +145,107 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         } else {
             return new Result(800, "邮箱修改失败");
         }
+    }
+
+    @Override
+    public IPage<User> selectPage(Page<User> pageParam, UserVo userVo) {
+        QueryWrapper<User> qw = new QueryWrapper<>();
+                qw.like("name", userVo.getName())
+                .like("student_number", userVo.getStudentNumber());
+        return baseMapper.selectPage(pageParam, qw);
+    }
+
+    @Override
+    public Result saveUser(User user) {
+        // 检查用户是否已经存在
+        QueryWrapper<User> qw = new QueryWrapper<User>()
+                .eq("username", user.getStudentNumber())
+                .or()
+                .eq("student_number", user.getStudentNumber());
+        User oldUser = baseMapper.selectOne(qw);
+        if (Objects.nonNull(oldUser)) {
+            throw new GlobalBusinessException(800, "该用户已存在");
+        }
+        user.setUsername(user.getStudentNumber());
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        int insert = baseMapper.insert(user);
+        if (insert <= 0) {
+            throw new GlobalBusinessException(800, "用户添加失败");
+        }
+        return new Result(200, "用户添加成功");
+    }
+
+    @Override
+    public Result updateUser(User user) {
+        // 查询用户是否存在
+        User oldUser = baseMapper.selectById(user.getId());
+        if (Objects.isNull(oldUser)) {
+            throw new GlobalBusinessException(800, "该用户不存在");
+        }
+
+        if (StringUtils.hasText(user.getStudentNumber())) {
+            user.setUsername(user.getStudentNumber());
+        }
+        if (StringUtils.hasText(user.getPassword())) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        }
+        int update = baseMapper.updateById(user);
+        if (update <= 0) {
+            throw new GlobalBusinessException(800, "用户修改失败");
+        }
+        return new Result(200, "用户修改成功");
+    }
+
+    @Override
+    public Result<User> getUserById(String userId) {
+        User user = baseMapper.selectById(userId);
+        user.setPassword(null);
+        return new Result<>(200, "请求成功", user);
+    }
+
+    @Override
+    public Result deleteById(String userId) {
+        // 查询用户是否存在
+        User user = baseMapper.selectById(userId);
+        if (Objects.isNull(user)) {
+            throw new GlobalBusinessException(800, "该用户不存在");
+        }
+        // 检查是否是系统管理员
+        if (user.getRoleId().equals("1")) {
+            throw new GlobalBusinessException(800, "无法删除系统管理员");
+        }
+        // 查询用户是否上传过作业
+        QueryWrapper<Task> qw = new QueryWrapper<Task>()
+                .eq("uploader_id", userId);
+        List<Task> tasks = taskMapper.selectList(qw);
+        if (tasks.size() > 0) {
+            throw new GlobalBusinessException(800, "该用户存在未删除的作业，无法删除");
+        }
+        // 删除用户
+        int delete = baseMapper.deleteById(userId);
+        if (delete <= 0) {
+            throw new GlobalBusinessException(800, "用户删除失败");
+        }
+        return new Result(200, "用户删除成功");
+    }
+
+    @Override
+    public Result switchStatus(String userId) {
+        // 查询用户是否存在
+        User user = baseMapper.selectById(userId);
+        if (Objects.isNull(user)) {
+            throw new GlobalBusinessException(800, "该用户不存在");
+        }
+        // 检查是否是系统管理员
+        if (user.getRoleId().equals("1")) {
+            throw new GlobalBusinessException(800, "无法禁用系统管理员");
+        }
+        user.setStatus(user.getStatus() == 1 ? 0 : 1);
+        // 更新用户信息
+        int update = baseMapper.updateById(user);
+        if (update <= 0) {
+            return new Result(800, "用户状态更新失败");
+        }
+        return new Result(200, "用户状态更新成功");
     }
 }

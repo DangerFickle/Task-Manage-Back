@@ -8,6 +8,7 @@ import top.belongme.model.result.Result;
 import top.belongme.model.vo.EmailVo;
 import top.belongme.model.vo.ResetPasswordVo;
 import top.belongme.model.vo.TaskDetailsQueryVo;
+import top.belongme.model.vo.UserVo;
 
 /**
  * @Title: UserService
@@ -24,4 +25,16 @@ public interface UserService extends IService<User> {
     Result resetPassword(ResetPasswordVo user);
 
     Result updateEmail(EmailVo emailVo);
+
+    IPage<User> selectPage(Page<User> pageParam, UserVo userVo);
+
+    Result saveUser(User user);
+
+    Result updateUser(User user);
+
+    Result<User> getUserById(String userId);
+
+    Result deleteById(String userId);
+
+    Result switchStatus(String userId);
 }
