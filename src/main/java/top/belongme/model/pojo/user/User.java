@@ -40,9 +40,10 @@ public class User implements Serializable {
     private String roleId;
     @TableField(exist = false)
     private String roleName;
-//    @Email(message = "邮箱格式错误")
+    // @Email(message = "邮箱格式错误")
     private String email;
     private String avatar;
+    // 状态（1：正常 0：停用）
     private Integer status;
     private Date createTime;
     private Date updateTime;

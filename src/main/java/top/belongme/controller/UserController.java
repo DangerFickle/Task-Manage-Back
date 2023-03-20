@@ -94,7 +94,7 @@ public class UserController {
         //创建page对象
         Page<User> pageParam = new Page<>(page, limit);
         //调用service方法
-        IPage<User> pageModel = userService.getNoCommitUserList(pageParam, taskDetailsQueryVo);
+        IPage<User> pageModel = userService.getNotCommitUserList(pageParam, taskDetailsQueryVo);
         return new Result<>(200, "请求成功", pageModel);
     }
 

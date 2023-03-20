@@ -20,7 +20,7 @@ import top.belongme.model.vo.UserVo;
 public interface UserService extends IService<User> {
     Result<User> getUserInfo(Long userId);
 
-    IPage<User> getNoCommitUserList(Page<User> pageParam, TaskDetailsQueryVo taskDetailsQueryVo);
+    IPage<User> getNotCommitUserList(Page<User> pageParam, TaskDetailsQueryVo taskDetailsQueryVo);
 
     Result resetPassword(ResetPasswordVo user);
 

@@ -2,7 +2,10 @@ package top.belongme;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import top.belongme.mapper.UserMapper;
 import top.belongme.model.pojo.Email;
+import top.belongme.model.pojo.user.User;
 import top.belongme.service.SendMailService;
 
 import javax.annotation.Resource;
@@ -18,12 +21,12 @@ import javax.annotation.Resource;
 public class TextEmailService {
 
     @Resource
-    SendMailService sendMailService;
+    PasswordEncoder passwordEncoder;
+
+    @Resource
+    UserMapper userMapper;
 
     @Test
     void testSend() {
-        Email mail = new Email("1975037337@qq.com", "测试邮件", "测试邮件");
-
-        sendMailService.sendSimpleMail(mail);
     }
 }

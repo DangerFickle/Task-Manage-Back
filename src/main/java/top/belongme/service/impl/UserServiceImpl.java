@@ -28,7 +28,6 @@ import top.belongme.service.UserService;
 import top.belongme.utils.RedisCache;
 
 import javax.annotation.Resource;
-import java.util.List;
 import java.util.Objects;
 
 /**
@@ -65,7 +64,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     // 这里使用的还是作业详情的vo类TaskDetailsQueryVo，因为查询未交人员的查询条件是一样的
     @Override
-    public IPage<User> getNoCommitUserList(Page<User> pageParam, TaskDetailsQueryVo taskDetailsQueryVo) {
+    public IPage<User> getNotCommitUserList(Page<User> pageParam, TaskDetailsQueryVo taskDetailsQueryVo) {
         // 检查批次是否已被删除
         Batch batch = batchMapper.selectById(taskDetailsQueryVo.getBelongBatchId());
         if (Objects.isNull(batch)) {
@@ -112,6 +111,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             if (!deleteCache) {
                 throw new GlobalBusinessException(800, "用户缓存清理失败，请重新登陆");
             }
+            log.info("用户【{}】修改了密码", loginUser.getUser().getUsername());
             return new Result(200, "密码修改成功");
         } else {
             return new Result(800, "密码修改失败");
@@ -141,6 +141,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 更新用户信息
         int update = baseMapper.updateById(user);
         if (update > 0) {
+            log.info("用户【{}】修改了邮箱，新邮箱为【{}】", loginUser.getUser().getName(), user.getEmail());
             return new Result(200, "邮箱修改成功");
         } else {
             return new Result(800, "邮箱修改失败");
@@ -172,6 +173,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (insert <= 0) {
             throw new GlobalBusinessException(800, "用户添加失败");
         }
+        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        log.info("管理员【{}】，添加了用户【{}】", loginUser.getUser().getName(), user.getName());
         return new Result(200, "用户添加成功");
     }
 
@@ -193,6 +196,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (update <= 0) {
             throw new GlobalBusinessException(800, "用户修改失败");
         }
+        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        log.info("管理员【{}】，更新了用户【{}】的信息", loginUser.getUser().getName(), oldUser.getName());
         return new Result(200, "用户修改成功");
     }
 
@@ -211,14 +216,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new GlobalBusinessException(800, "该用户不存在");
         }
         // 检查是否是系统管理员
-        if (user.getRoleId().equals("1")) {
+        if ("1".equals(user.getRoleId())) {
             throw new GlobalBusinessException(800, "无法删除系统管理员");
         }
         // 查询用户是否上传过作业
         QueryWrapper<Task> qw = new QueryWrapper<Task>()
                 .eq("uploader_id", userId);
-        List<Task> tasks = taskMapper.selectList(qw);
-        if (tasks.size() > 0) {
+        Long tasks = taskMapper.selectCount(qw);
+        if (tasks > 0) {
             throw new GlobalBusinessException(800, "该用户存在未删除的作业，无法删除");
         }
         // 删除用户
@@ -226,6 +231,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (delete <= 0) {
             throw new GlobalBusinessException(800, "用户删除失败");
         }
+        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        log.info("管理员【{}】删除了用户【{}】", loginUser.getUser().getName(), user.getName());
         return new Result(200, "用户删除成功");
     }
 
@@ -246,6 +253,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (update <= 0) {
             return new Result(800, "用户状态更新失败");
         }
+        log.info("用户【{}】可用状态更新为【{}】成功", user.getName(), user.getStatus() == 1 ? "可用" : "禁用");
         return new Result(200, "用户状态更新成功");
     }
 }
