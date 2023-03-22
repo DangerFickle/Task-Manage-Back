@@ -38,8 +38,8 @@ public class BatchController {
     @PreAuthorize("hasAuthority('job:batch:select')")
     @GetMapping("listPage/{page}/{limit}")
     public Result<IPage<Batch>> getBatchList(@PathVariable Long page,
-                                               @PathVariable Long limit,
-                                              BatchQueryVo batchQueryVo) {
+                                             @PathVariable Long limit,
+                                             BatchQueryVo batchQueryVo) {
         //创建page对象
         Page<Batch> pageParam = new Page<>(page, limit);
         //调用service方法
@@ -74,8 +74,8 @@ public class BatchController {
     @PreAuthorize("hasAuthority('job:batch:select')")
     @GetMapping("listPageIsCommitAndCount/{page}/{limit}")
     public Result<IPage<Batch>> getBatchListIsCommitAndCount(@PathVariable Long page,
-                                                     @PathVariable Long limit,
-                                                     BatchQueryVo batchQueryVo) {
+                                                             @PathVariable Long limit,
+                                                             BatchQueryVo batchQueryVo) {
         //创建page对象
         Page<Batch> pageParam = new Page<>(page, limit);
         //调用service方法
@@ -104,7 +104,7 @@ public class BatchController {
      */
     @PreAuthorize("hasAuthority('job:batch:insert')")
     @PostMapping("add")
-    public Result addBatch(@RequestBody @Valid Batch batch, BindingResult result){
+    public Result addBatch(@RequestBody @Valid Batch batch, BindingResult result) {
         if (result != null && result.hasErrors()) {
             throw new GlobalBusinessException(800, Objects.requireNonNull(result.getFieldError()).getDefaultMessage());
         }
@@ -120,7 +120,7 @@ public class BatchController {
      */
     @PreAuthorize("hasAuthority('job:batch:update')")
     @PutMapping("update")
-    public Result updateBatch(@RequestBody @Valid Batch batch, BindingResult result){
+    public Result updateBatch(@RequestBody @Valid Batch batch, BindingResult result) {
         if (result != null && result.hasErrors()) {
             throw new GlobalBusinessException(800, Objects.requireNonNull(result.getFieldError()).getDefaultMessage());
         }
@@ -135,7 +135,7 @@ public class BatchController {
      */
     @PreAuthorize("hasAuthority('job:batch:delete')")
     @DeleteMapping("delete/{batchId}")
-    public Result deleteBatch(@PathVariable String batchId){
+    public Result deleteBatch(@PathVariable String batchId) {
         return batchService.deleteBatchAndFolderPath(batchId);
     }
 
