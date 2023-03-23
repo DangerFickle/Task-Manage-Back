@@ -69,7 +69,7 @@ public class UserController {
      */
     @PreAuthorize("hasAuthority('job:personal:update')")
     @PutMapping("/updateEmail")
-    public Result resetPassword(@Validated EmailVo emailVo, BindingResult result) {
+    public Result updateEmail(@Validated EmailVo emailVo, BindingResult result) {
         if (result != null && result.hasErrors()) {
             throw new GlobalBusinessException(800, Objects.requireNonNull(result.getFieldError()).getDefaultMessage());
         }

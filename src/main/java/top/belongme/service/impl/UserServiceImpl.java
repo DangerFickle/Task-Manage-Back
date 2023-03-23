@@ -151,7 +151,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public IPage<User> selectPage(Page<User> pageParam, UserVo userVo) {
         QueryWrapper<User> qw = new QueryWrapper<>();
-                qw.like("name", userVo.getName())
+        qw.like("name", userVo.getName())
                 .like("student_number", userVo.getStudentNumber());
         return baseMapper.selectPage(pageParam, qw);
     }
@@ -168,7 +168,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new GlobalBusinessException(800, "该用户已存在");
         }
         user.setUsername(user.getStudentNumber());
-        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        if (StringUtils.hasText(user.getPassword())) {
+            user.setPassword(passwordEncoder.encode(user.getPassword()));
+        } else {
+            user.setPassword(passwordEncoder.encode(user.getStudentNumber()));
+        }
         int insert = baseMapper.insert(user);
         if (insert <= 0) {
             throw new GlobalBusinessException(800, "用户添加失败");
@@ -186,12 +190,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new GlobalBusinessException(800, "该用户不存在");
         }
 
-        if (StringUtils.hasText(user.getStudentNumber())) {
+        if (!Objects.equals(oldUser.getStudentNumber(), user.getStudentNumber())) {
             user.setUsername(user.getStudentNumber());
+        } else {
+            user.setStudentNumber(null);
         }
+
         if (StringUtils.hasText(user.getPassword())) {
             user.setPassword(passwordEncoder.encode(user.getPassword()));
+        } else {
+            user.setPassword(oldUser.getPassword());
         }
+
         int update = baseMapper.updateById(user);
         if (update <= 0) {
             throw new GlobalBusinessException(800, "用户修改失败");
