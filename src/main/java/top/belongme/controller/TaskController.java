@@ -34,8 +34,8 @@ public class TaskController {
      */
     @PreAuthorize("hasAuthority('job:task:insert')")
     @PostMapping(value = "/commitTask")
-    public Result commitTask(@RequestParam("taskFile") MultipartFile uploadTaskFile, @RequestParam("belongBatchId") String belongBatchId){
-        return taskService.commitTask(uploadTaskFile,belongBatchId);
+    public Result commitTask(@RequestParam("taskFile") MultipartFile uploadTaskFile, @RequestParam("belongBatchId") String belongBatchId) {
+        return taskService.commitTask(uploadTaskFile, belongBatchId);
     }
 
 
@@ -47,7 +47,7 @@ public class TaskController {
      */
     @PreAuthorize("hasAuthority('job:task:delete')")
     @DeleteMapping("/cancelCommit/{BatchId}")
-    public Result cancelCommitTask(@PathVariable String BatchId){
+    public Result cancelCommitTask(@PathVariable String BatchId) {
         return taskService.cancelCommitTask(BatchId);
     }
 
