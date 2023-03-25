@@ -29,6 +29,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.*;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
@@ -258,7 +259,10 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         //在vue的response中显示Content-Disposition
         response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
         // 设置在下载框默认显示的文件名
-        response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(task.getFileName(), "UTF-8"));
+        String filename = URLEncoder.encode(task.getFileName(), StandardCharsets.UTF_8);
+        // 解决编码后空格变加号的问题
+        filename = filename.replace("+", "%20");
+        response.setHeader("Content-Disposition", "attachment;filename=" + filename);
         response.setHeader("Content-Length", String.valueOf(taskFile.length()));
 
         response.setContentType("application/octet-stream;charset=UTF-8");
