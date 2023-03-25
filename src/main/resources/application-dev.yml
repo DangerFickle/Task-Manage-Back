@@ -47,3 +47,12 @@ mybatis-plus:
   mapper-locations: classpath*:/mapper/**/*.xml
 job-manage-settings:
   work-folder-name: "JobManage"
+
+management:
+  endpoint:
+    shutdown:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: shutdown

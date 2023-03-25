@@ -82,9 +82,9 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
      */
     @Override
     public Result commitTask(MultipartFile uploadTaskFile, String belongBatchId) {
-        // 限制提交大小为30MB
-        if (uploadTaskFile.getSize() > 30 * 1024 * 1024) {
-            throw new GlobalBusinessException(800, "作业文件不得超过30MB");
+        // 限制提交大小为50MB
+        if (uploadTaskFile.getSize() > 50 * 1024 * 1024) {
+            throw new GlobalBusinessException(800, "作业文件不得超过50MB");
         }
 
         Batch belongBatch = batchMapper.selectById(belongBatchId);

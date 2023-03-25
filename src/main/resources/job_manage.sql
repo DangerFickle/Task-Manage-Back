@@ -11,7 +11,7 @@
  Target Server Version : 50650
  File Encoding         : 65001
 
- Date: 24/03/2023 23:28:02
+ Date: 25/03/2023 13:28:09
 */
 
 SET NAMES utf8mb4;
@@ -92,35 +92,36 @@ CREATE TABLE `job_menu`  (
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `is_deleted` tinyint(4) NOT NULL DEFAULT 0 COMMENT '删除标记（0:可用 1:已删除）',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 31 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '菜单表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 32 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '菜单表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of job_menu
 -- ----------------------------
-INSERT INTO `job_menu` VALUES (1, 0, '作业管理', 0, 'jobManage', NULL, NULL, NULL, NULL, 0, '2023-02-07 12:52:16', '2023-02-07 19:29:28', 0);
-INSERT INTO `job_menu` VALUES (2, 1, '课程管理', 1, 'courseManage', NULL, NULL, NULL, NULL, 0, '2023-02-07 12:53:04', '2023-02-07 19:29:28', 0);
-INSERT INTO `job_menu` VALUES (3, 1, '批次管理', 1, 'batchManage', NULL, NULL, NULL, NULL, 0, '2023-02-07 12:53:19', '2023-02-07 19:29:28', 0);
-INSERT INTO `job_menu` VALUES (4, 0, '提交详情', 0, 'submissionDetails', NULL, NULL, NULL, NULL, 0, '2023-02-07 12:54:02', '2023-02-07 19:29:28', 0);
-INSERT INTO `job_menu` VALUES (5, 0, '人员管理', 0, 'personnelManage', NULL, NULL, NULL, NULL, 0, '2023-02-07 12:54:21', '2023-02-07 19:29:28', 0);
-INSERT INTO `job_menu` VALUES (6, 0, '个人中心', 0, 'personal', NULL, NULL, NULL, NULL, 0, '2023-02-07 12:54:52', '2023-02-07 19:29:28', 0);
-INSERT INTO `job_menu` VALUES (7, 2, '添加', 2, NULL, NULL, 'job:course:insert', NULL, NULL, 0, '2023-02-07 16:52:23', '2023-02-07 16:52:23', 0);
-INSERT INTO `job_menu` VALUES (8, 2, '删除', 2, NULL, NULL, 'job:course:delete', NULL, NULL, 0, '2023-02-07 19:27:39', '2023-02-07 19:29:28', 0);
-INSERT INTO `job_menu` VALUES (9, 2, '修改', 2, NULL, NULL, 'job:course:update', NULL, NULL, 0, '2023-02-07 19:29:58', '2023-02-07 19:29:58', 0);
-INSERT INTO `job_menu` VALUES (10, 2, '查看', 2, NULL, NULL, 'job:course:select', NULL, NULL, 0, '2023-02-07 19:30:38', '2023-02-07 19:30:38', 0);
-INSERT INTO `job_menu` VALUES (11, 3, '添加', 2, NULL, NULL, 'job:batch:insert', NULL, NULL, 0, '2023-02-07 20:14:37', '2023-02-07 20:14:37', 0);
-INSERT INTO `job_menu` VALUES (12, 3, '删除', 2, NULL, NULL, 'job:batch:delete', NULL, NULL, 0, '2023-02-07 20:14:37', '2023-02-07 20:14:37', 0);
-INSERT INTO `job_menu` VALUES (13, 3, '修改', 2, NULL, NULL, 'job:batch:update', NULL, NULL, 0, '2023-02-07 20:14:37', '2023-02-07 20:14:37', 0);
-INSERT INTO `job_menu` VALUES (14, 3, '查看', 2, NULL, NULL, 'job:batch:select', NULL, NULL, 0, '2023-02-07 20:14:37', '2023-02-07 20:14:37', 0);
-INSERT INTO `job_menu` VALUES (18, 4, '查看', 2, NULL, NULL, 'job:taskDetail:select', NULL, NULL, 0, '2023-02-07 20:16:45', '2023-02-12 20:06:37', 0);
-INSERT INTO `job_menu` VALUES (19, 5, '添加', 2, NULL, NULL, 'job:user:insert', NULL, NULL, 0, '2023-02-07 20:17:36', '2023-02-07 20:17:36', 0);
-INSERT INTO `job_menu` VALUES (20, 5, '删除', 2, NULL, NULL, 'job:user:delete', NULL, NULL, 0, '2023-02-07 20:17:36', '2023-02-07 20:17:36', 0);
-INSERT INTO `job_menu` VALUES (21, 5, '修改', 2, NULL, NULL, 'job:user:update', NULL, NULL, 0, '2023-02-07 20:17:36', '2023-02-07 20:17:36', 0);
-INSERT INTO `job_menu` VALUES (22, 5, '查看', 2, NULL, NULL, 'job:user:select', NULL, NULL, 0, '2023-02-07 20:17:36', '2023-02-07 20:17:36', 0);
-INSERT INTO `job_menu` VALUES (25, 6, '修改', 2, NULL, NULL, 'job:personal:update', NULL, NULL, 0, '2023-02-07 20:18:35', '2023-02-07 20:18:35', 0);
-INSERT INTO `job_menu` VALUES (26, 6, '查看', 2, NULL, NULL, 'job:personal:select', NULL, NULL, 0, '2023-02-07 20:18:35', '2023-02-07 20:18:35', 0);
+INSERT INTO `job_menu` VALUES (1, 0, '作业管理', 0, 'jobManage', NULL, NULL, NULL, NULL, 1, '2023-02-07 12:52:16', '2023-03-25 13:24:43', 0);
+INSERT INTO `job_menu` VALUES (2, 1, '课程管理', 1, 'courseManage', NULL, NULL, NULL, NULL, 1, '2023-02-07 12:53:04', '2023-03-25 13:24:42', 0);
+INSERT INTO `job_menu` VALUES (3, 1, '批次管理', 1, 'batchManage', NULL, NULL, NULL, NULL, 1, '2023-02-07 12:53:19', '2023-03-25 13:24:42', 0);
+INSERT INTO `job_menu` VALUES (4, 0, '提交详情', 0, 'submissionDetails', NULL, NULL, NULL, NULL, 1, '2023-02-07 12:54:02', '2023-03-25 13:24:42', 0);
+INSERT INTO `job_menu` VALUES (5, 0, '人员管理', 0, 'personnelManage', NULL, NULL, NULL, NULL, 1, '2023-02-07 12:54:21', '2023-03-25 13:24:42', 0);
+INSERT INTO `job_menu` VALUES (6, 0, '个人中心', 0, 'personal', NULL, NULL, NULL, NULL, 1, '2023-02-07 12:54:52', '2023-03-25 13:24:42', 0);
+INSERT INTO `job_menu` VALUES (7, 2, '添加', 2, NULL, NULL, 'job:course:insert', NULL, NULL, 1, '2023-02-07 16:52:23', '2023-03-25 13:24:42', 0);
+INSERT INTO `job_menu` VALUES (8, 2, '删除', 2, NULL, NULL, 'job:course:delete', NULL, NULL, 1, '2023-02-07 19:27:39', '2023-03-25 13:24:42', 0);
+INSERT INTO `job_menu` VALUES (9, 2, '修改', 2, NULL, NULL, 'job:course:update', NULL, NULL, 1, '2023-02-07 19:29:58', '2023-03-25 13:24:42', 0);
+INSERT INTO `job_menu` VALUES (10, 2, '查看', 2, NULL, NULL, 'job:course:select', NULL, NULL, 1, '2023-02-07 19:30:38', '2023-03-25 13:24:42', 0);
+INSERT INTO `job_menu` VALUES (11, 3, '添加', 2, NULL, NULL, 'job:batch:insert', NULL, NULL, 1, '2023-02-07 20:14:37', '2023-03-25 13:24:42', 0);
+INSERT INTO `job_menu` VALUES (12, 3, '删除', 2, NULL, NULL, 'job:batch:delete', NULL, NULL, 1, '2023-02-07 20:14:37', '2023-03-25 13:24:42', 0);
+INSERT INTO `job_menu` VALUES (13, 3, '修改', 2, NULL, NULL, 'job:batch:update', NULL, NULL, 1, '2023-02-07 20:14:37', '2023-03-25 13:24:42', 0);
+INSERT INTO `job_menu` VALUES (14, 3, '查看', 2, NULL, NULL, 'job:batch:select', NULL, NULL, 1, '2023-02-07 20:14:37', '2023-03-25 13:24:42', 0);
+INSERT INTO `job_menu` VALUES (18, 4, '查看', 2, NULL, NULL, 'job:taskDetail:select', NULL, NULL, 1, '2023-02-07 20:16:45', '2023-03-25 13:24:43', 0);
+INSERT INTO `job_menu` VALUES (19, 5, '添加', 2, NULL, NULL, 'job:user:insert', NULL, NULL, 1, '2023-02-07 20:17:36', '2023-03-25 13:24:42', 0);
+INSERT INTO `job_menu` VALUES (20, 5, '删除', 2, NULL, NULL, 'job:user:delete', NULL, NULL, 1, '2023-02-07 20:17:36', '2023-03-25 13:24:43', 0);
+INSERT INTO `job_menu` VALUES (21, 5, '修改', 2, NULL, NULL, 'job:user:update', NULL, NULL, 1, '2023-02-07 20:17:36', '2023-03-25 13:24:42', 0);
+INSERT INTO `job_menu` VALUES (22, 5, '查看', 2, NULL, NULL, 'job:user:select', NULL, NULL, 1, '2023-02-07 20:17:36', '2023-03-25 13:24:42', 0);
+INSERT INTO `job_menu` VALUES (25, 6, '修改', 2, NULL, NULL, 'job:personal:update', NULL, NULL, 1, '2023-02-07 20:18:35', '2023-03-25 13:24:43', 0);
+INSERT INTO `job_menu` VALUES (26, 6, '查看', 2, NULL, NULL, 'job:personal:select', NULL, NULL, 1, '2023-02-07 20:18:35', '2023-03-25 13:24:43', 0);
 INSERT INTO `job_menu` VALUES (27, 1, '添加', 2, NULL, NULL, 'job:task:insert', NULL, NULL, 1, '2023-02-09 16:33:42', '2023-02-10 18:16:45', 0);
 INSERT INTO `job_menu` VALUES (28, 1, '删除', 2, NULL, NULL, 'job:task:delete', NULL, NULL, 1, '2023-02-09 16:33:42', '2023-02-10 18:16:45', 0);
 INSERT INTO `job_menu` VALUES (30, 1, '查看', 2, NULL, NULL, 'job:task:select', NULL, NULL, 1, '2023-02-09 16:33:42', '2023-02-10 18:16:45', 0);
+INSERT INTO `job_menu` VALUES (31, 0, '关闭系统', 2, NULL, NULL, 'job:system:shutdown', NULL, NULL, 1, '2023-03-25 13:24:18', '2023-03-25 13:24:18', 0);
 
 -- ----------------------------
 -- Table structure for job_role
@@ -160,7 +161,7 @@ CREATE TABLE `job_role_menu`  (
   INDEX `menu_id`(`menu_id`) USING BTREE,
   CONSTRAINT `job_role_menu_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `job_role` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `job_role_menu_ibfk_2` FOREIGN KEY (`menu_id`) REFERENCES `job_menu` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 55 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '角色菜单' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 56 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '角色菜单' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of job_role_menu
@@ -203,6 +204,7 @@ INSERT INTO `job_role_menu` VALUES (49, 3, 27, '2023-02-14 14:29:27', '2023-02-1
 INSERT INTO `job_role_menu` VALUES (50, 3, 28, '2023-02-14 14:29:27', '2023-02-14 14:29:27', 0);
 INSERT INTO `job_role_menu` VALUES (51, 3, 10, '2023-02-14 14:30:04', '2023-02-14 14:30:04', 0);
 INSERT INTO `job_role_menu` VALUES (52, 3, 14, '2023-02-14 14:30:04', '2023-02-14 14:30:04', 0);
+INSERT INTO `job_role_menu` VALUES (55, 1, 31, '2023-03-25 13:26:03', '2023-03-25 13:26:03', 0);
 
 -- ----------------------------
 -- Table structure for job_task
@@ -238,7 +240,7 @@ CREATE TABLE `job_user`  (
   `name` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '姓名',
   `student_number` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NOT NULL COMMENT '学号',
   `email` varchar(50) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '邮箱',
-  `avatar` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '图片URL地址',
+  `avatar` varchar(200) CHARACTER SET utf8 COLLATE utf8_general_ci NULL DEFAULT NULL COMMENT '头像Base64编码',
   `status` tinyint(4) NOT NULL DEFAULT 0 COMMENT '状态（1：正常 0：停用）',
   `create_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
