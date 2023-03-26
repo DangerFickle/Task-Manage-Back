@@ -71,7 +71,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new GlobalBusinessException(800, "该批次不存在");
         }
         log.info("获取未交人员列表成功");
-        return baseMapper.getNoCommitUserList(pageParam, taskDetailsQueryVo);
+        return baseMapper.getNotCommitUserList(pageParam, taskDetailsQueryVo);
     }
 
     /**

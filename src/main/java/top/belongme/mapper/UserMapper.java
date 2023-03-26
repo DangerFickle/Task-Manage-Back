@@ -5,8 +5,10 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 import top.belongme.model.pojo.user.User;
+import top.belongme.model.excel.UserExcel;
 import top.belongme.model.vo.TaskDetailsQueryVo;
-import top.belongme.model.vo.UserVo;
+
+import java.util.List;
 
 /**
  * @Title: UserMapper
@@ -16,5 +18,6 @@ import top.belongme.model.vo.UserVo;
  * @Date 2023/2/714:44
  */
 public interface UserMapper extends BaseMapper<User> {
-    IPage<User> getNoCommitUserList(Page<User> pageParam, @Param("vo") TaskDetailsQueryVo taskDetailsQueryVo);
+    IPage<User> getNotCommitUserList(Page<User> pageParam, @Param("vo") TaskDetailsQueryVo taskDetailsQueryVo);
+    List<UserExcel> getNotCommitUserListExcel(@Param("vo") TaskDetailsQueryVo taskDetailsQueryVo);
 }

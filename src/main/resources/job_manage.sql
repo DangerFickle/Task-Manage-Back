@@ -11,7 +11,7 @@
  Target Server Version : 50650
  File Encoding         : 65001
 
- Date: 25/03/2023 13:28:09
+ Date: 26/03/2023 22:21:11
 */
 
 SET NAMES utf8mb4;
@@ -45,7 +45,7 @@ CREATE TABLE `job_batch`  (
 -- ----------------------------
 -- Records of job_batch
 -- ----------------------------
-INSERT INTO `job_batch` VALUES (1627616322357637122, '测试批次', '测试批次', '1970-01-01 00:00:00.000', '/www/wwwroot/JavaProject/TaskManage-Back/JobManage/测试课程/测试批次', 1625772321090387969, 1, 1, '2023-02-20 18:29:05', '2023-03-15 15:56:24');
+INSERT INTO `job_batch` VALUES (1627616322357637122, '测试批次', '测试批次', '2023-04-02 16:50:53.000', '/www/wwwroot/JavaProject/TaskManage-Back/JobManage/测试课程/测试批次', 1625772321090387969, 1, 1, '2023-02-20 18:29:05', '2023-03-26 16:50:54');
 
 -- ----------------------------
 -- Table structure for job_course
@@ -92,7 +92,7 @@ CREATE TABLE `job_menu`  (
   `update_time` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   `is_deleted` tinyint(4) NOT NULL DEFAULT 0 COMMENT '删除标记（0:可用 1:已删除）',
   PRIMARY KEY (`id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 32 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '菜单表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 33 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '菜单表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of job_menu
@@ -122,6 +122,7 @@ INSERT INTO `job_menu` VALUES (27, 1, '添加', 2, NULL, NULL, 'job:task:insert'
 INSERT INTO `job_menu` VALUES (28, 1, '删除', 2, NULL, NULL, 'job:task:delete', NULL, NULL, 1, '2023-02-09 16:33:42', '2023-02-10 18:16:45', 0);
 INSERT INTO `job_menu` VALUES (30, 1, '查看', 2, NULL, NULL, 'job:task:select', NULL, NULL, 1, '2023-02-09 16:33:42', '2023-02-10 18:16:45', 0);
 INSERT INTO `job_menu` VALUES (31, 0, '关闭系统', 2, NULL, NULL, 'job:system:shutdown', NULL, NULL, 1, '2023-03-25 13:24:18', '2023-03-25 13:24:18', 0);
+INSERT INTO `job_menu` VALUES (32, 0, '导出信息Excel', 2, NULL, NULL, 'job:userInfo:export', NULL, NULL, 1, '2023-03-26 21:10:35', '2023-03-26 21:10:35', 0);
 
 -- ----------------------------
 -- Table structure for job_role
@@ -161,7 +162,7 @@ CREATE TABLE `job_role_menu`  (
   INDEX `menu_id`(`menu_id`) USING BTREE,
   CONSTRAINT `job_role_menu_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `job_role` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `job_role_menu_ibfk_2` FOREIGN KEY (`menu_id`) REFERENCES `job_menu` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 56 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '角色菜单' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 59 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '角色菜单' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of job_role_menu
@@ -205,6 +206,9 @@ INSERT INTO `job_role_menu` VALUES (50, 3, 28, '2023-02-14 14:29:27', '2023-02-1
 INSERT INTO `job_role_menu` VALUES (51, 3, 10, '2023-02-14 14:30:04', '2023-02-14 14:30:04', 0);
 INSERT INTO `job_role_menu` VALUES (52, 3, 14, '2023-02-14 14:30:04', '2023-02-14 14:30:04', 0);
 INSERT INTO `job_role_menu` VALUES (55, 1, 31, '2023-03-25 13:26:03', '2023-03-25 13:26:03', 0);
+INSERT INTO `job_role_menu` VALUES (56, 1, 32, '2023-03-26 21:10:54', '2023-03-26 21:10:54', 0);
+INSERT INTO `job_role_menu` VALUES (57, 2, 32, '2023-03-26 21:11:04', '2023-03-26 21:11:04', 0);
+INSERT INTO `job_role_menu` VALUES (58, 3, 30, '2023-03-26 22:20:50', '2023-03-26 22:20:50', 0);
 
 -- ----------------------------
 -- Table structure for job_task

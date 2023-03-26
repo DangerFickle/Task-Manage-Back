@@ -65,6 +65,18 @@ public class TaskController {
     }
 
     /**
+     * TODO 根据批次id下载登陆用户的作业文件
+     *
+     * @Author DengChao
+     * @Date 2023/3/26 21:49
+     */
+    @PreAuthorize("hasAuthority('job:task:select')")
+    @GetMapping("/downloadSelfTask/{belongBatchId}")
+    public void getSelfTaskFile(@PathVariable String belongBatchId, HttpServletResponse response) throws IOException {
+        taskService.getTaskFileByBelongBatchId(belongBatchId, response);
+    }
+
+    /**
      * TODO 根据批次id下载整个批次文件夹的压缩包
      *
      * @Author DengChao

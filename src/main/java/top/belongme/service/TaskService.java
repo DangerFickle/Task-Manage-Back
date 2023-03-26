@@ -25,5 +25,7 @@ public interface TaskService extends IService<Task> {
 
     void getTaskFile(String taskId, HttpServletResponse response) throws IOException;
 
+    void getTaskFileByBelongBatchId(String belongBatchId, HttpServletResponse response) throws IOException;
+
     void getBatchFile(String batchId, HttpServletResponse response) throws IOException;
 }

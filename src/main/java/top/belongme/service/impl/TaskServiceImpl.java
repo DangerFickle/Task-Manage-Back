@@ -240,14 +240,14 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         response.setHeader("Access-Control-Expose-Headers", "exception");
         Task task = taskMapper.selectById(taskId);
         if (Objects.isNull(task)) {
-            response.setHeader("exception", URLEncoder.encode("该作业不存在，无法下载", StandardCharsets.UTF_8));
-            throw new GlobalBusinessException(800, "该作业不存在，无法下载");
+            response.setHeader("exception", URLEncoder.encode("该作业不存在", StandardCharsets.UTF_8));
+            throw new GlobalBusinessException(800, "该作业不存在");
         }
         // 查询该作业所属的批次是否已截止，已截止才可以下载
         Batch batch = batchMapper.selectById(task.getBelongBatchId());
         if (batch.getEndTime().after(new Date()) || batch.getEndTime().equals(GMTDate)) {
-            response.setHeader("exception", URLEncoder.encode("所属批次还未截止，无法下载", StandardCharsets.UTF_8));
-            throw new GlobalBusinessException(800, "所属批次还未截止，无法下载");
+            response.setHeader("exception", URLEncoder.encode("所属批次还未截止", StandardCharsets.UTF_8));
+            throw new GlobalBusinessException(800, "所属批次还未截止");
         }
 
         File taskFile = new File(task.getFilePath());
@@ -263,39 +263,50 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         filename = filename.replace("+", "%20");
         response.setHeader("Content-Disposition", "attachment;filename=" + filename);
         response.setHeader("Content-Length", String.valueOf(taskFile.length()));
+        response.setContentType("application/octet-stream;charset=UTF-8");
 
-        response.setContentType("application/octet-stream; charset=UTF-8");
-        InputStream inputStream = null;
-        BufferedInputStream bufferedInputStream = null;
-        BufferedOutputStream bufferedOutputStream = null;
-        try {
-            inputStream = Files.newInputStream(taskFile.toPath());
-            bufferedInputStream = new BufferedInputStream(inputStream);
-            bufferedOutputStream = new BufferedOutputStream(response.getOutputStream());
-            // 将文件流写入到response的输出流中
-            FileCopyUtils.copy(bufferedInputStream, bufferedOutputStream);
-            // 获取当前登陆的用户
-            LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            // 获取所属课程
-            Course course = courseMapper.selectById(batch.getBelongCourseId());
-            // 获取作业的提交人
-            User uploader = userMapper.selectById(task.getUploaderId());
-            // 打印日志
-            log.info("管理员【{}】下载了：【{}】的【{}】批次下，【{}】的作业", loginUser.getUser().getName(), course.getCourseName(), batch.getBatchName(), uploader.getName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (inputStream != null) {
-                inputStream.close();
-            }
-            if (bufferedInputStream != null) {
-                bufferedInputStream.close();
-            }
-            if (bufferedOutputStream != null) {
-                bufferedOutputStream.flush();
-                bufferedOutputStream.close();
-            }
+        // 将文件流写入到response的输出流中
+        FileUtils.copyFile(taskFile, response.getOutputStream());
+        // 获取当前登陆的用户
+        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        // 获取所属课程
+        Course course = courseMapper.selectById(batch.getBelongCourseId());
+        // 获取作业的提交人
+        User uploader = userMapper.selectById(task.getUploaderId());
+        // 打印日志
+        log.info("管理员【{}】下载了：【{}】的【{}】批次下，【{}】的作业", loginUser.getUser().getName(), course.getCourseName(), batch.getBatchName(), uploader.getName());
+    }
+
+    @Override
+    public void getTaskFileByBelongBatchId(String belongBatchId, HttpServletResponse response) throws IOException {
+        response.setHeader("Access-Control-Expose-Headers", "exception");
+        // 获取当前登陆的用户
+        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        // 根据批次id和当前登陆的用户id查询作业
+        QueryWrapper<Task> taskQueryWrapper = new QueryWrapper<>();
+        taskQueryWrapper.eq("belong_batch_id", belongBatchId);
+        taskQueryWrapper.eq("uploader_id", loginUser.getUser().getId());
+        Task task = taskMapper.selectOne(taskQueryWrapper);
+        if (Objects.isNull(task)) {
+            response.setHeader("exception", URLEncoder.encode("您还没有提交过该批次呢", StandardCharsets.UTF_8));
+            throw new GlobalBusinessException(800, "您还没有提交过该批次呢");
         }
+        File taskFile = new File(task.getFilePath());
+        // 设置在下载框默认显示的文件名
+        String filename = URLEncoder.encode(task.getFileName(), StandardCharsets.UTF_8);
+        // 解决编码后空格变加号的问题
+        filename = filename.replace("+", "%20");
+        //在vue的response中显示Content-Disposition
+        response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
+        response.setHeader("Content-Disposition", "attachment;filename=" + filename);
+        response.setHeader("Content-Length", String.valueOf(taskFile.length()));
+        response.setContentType("application/octet-stream;charset=UTF-8");
+
+        FileUtils.copyFile(taskFile, response.getOutputStream());
+
+        Batch batch = batchMapper.selectById(belongBatchId);
+        Course course = courseMapper.selectById(batch.getBelongCourseId());
+        log.info("用户【{}】，下载了【{}】课程中【{}】批次的作业", loginUser.getUser().getName(), course.getCourseName(), batch.getBatchName());
     }
 
     @Override
@@ -305,20 +316,20 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         // 设置响应类型为文本
         Batch batch = batchMapper.selectById(batchId);
         if (Objects.isNull(batch)) {
-            response.setHeader("exception", "batch not exist");
+            response.setHeader("exception", URLEncoder.encode("该批次不存在", StandardCharsets.UTF_8));
             throw new GlobalBusinessException(800, "该批次不存在");
         }
 
         if (batch.getEndTime().after(new Date()) || batch.getEndTime().equals(GMTDate)) {
-            response.setHeader("exception", "batch not end");
-            throw new GlobalBusinessException(800, "该批次还未截止，无法下载");
+            response.setHeader("exception", URLEncoder.encode("该批次还未截止", StandardCharsets.UTF_8));
+            throw new GlobalBusinessException(800, "该批次还未截止");
         }
 
         // 判断所属课程是否被禁用
         Course course = courseMapper.selectById(batch.getBelongCourseId());
         if (course.getStatus() == 0) {
-            response.setHeader("exception", "course is disabled");
-            throw new GlobalBusinessException(800, "所属课程已被禁用，无法下载");
+            response.setHeader("exception", URLEncoder.encode("所属课程已被禁用", StandardCharsets.UTF_8));
+            throw new GlobalBusinessException(800, "所属课程已被禁用");
         }
 
         // 判断批次下是否存在作业
@@ -326,7 +337,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         taskQueryWrapper.eq("belong_batch_id", batchId);
         long count = taskMapper.selectCount(taskQueryWrapper);
         if (count == 0) {
-            response.setHeader("exception", "no task");
+            response.setHeader("exception", URLEncoder.encode("该批次下还没有作业", StandardCharsets.UTF_8));
             throw new GlobalBusinessException(800, "该批次下还没有作业");
         }
 
@@ -334,16 +345,17 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         String batchFolderPath = batch.getFolderPath();
         File batchFolder = new File(batchFolderPath);
         if (!batchFolder.exists()) {
-            response.setHeader("exception", "batch folder not exist");
+            response.setHeader("exception", URLEncoder.encode("该批次文件夹不存在", StandardCharsets.UTF_8));
             throw new GlobalBusinessException(800, "该批次文件夹不存在");
         }
 
         // 获取该批次文件夹下的的所有作业文件
         List<File> fileList = Arrays.asList(batchFolder.listFiles());
         // 以所属课程名 + 批次名作为zip文件名
-        String fileName = course.getCourseName() + "---" + batch.getBatchName();
+        String fileName = course.getCourseName() + "—" + batch.getBatchName();
         // 拼接压缩包的路径
         String filePath = filePathBySystem + "temp_files" + File.separator + fileName + ".zip";
+
         // 压缩文件
         new ZipFile(filePath).addFiles(fileList);
 
@@ -356,42 +368,24 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         //在vue的response中显示Content-Disposition
         response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
         // 设置在下载框默认显示的文件名
-        response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(taskFilesZip.getName(), "UTF-8"));
+        response.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(taskFilesZip.getName(), StandardCharsets.UTF_8));
         response.setHeader("Content-Length", String.valueOf(taskFilesZip.length()));
-
         response.setContentType("application/octet-stream;charset=UTF-8");
-        InputStream inputStream = null;
-        BufferedInputStream bufferedInputStream = null;
-        BufferedOutputStream bufferedOutputStream = null;
-        try {
-            inputStream = Files.newInputStream(taskFilesZip.toPath());
-            bufferedInputStream = new BufferedInputStream(inputStream);
-            bufferedOutputStream = new BufferedOutputStream(response.getOutputStream());
-            // 将文件流写入到response的输出流中
-            FileCopyUtils.copy(bufferedInputStream, bufferedOutputStream);
-
-            // 获取当前登陆的用户
-            LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            // 打印日志
-            log.info("管理员【{}】，下载了：【{}】下的【{}】批次下所有作业", loginUser.getUser().getName(), course.getCourseName(), batch.getBatchName());
-        } catch (Exception e) {
-            e.printStackTrace();
-        } finally {
-            if (inputStream != null) {
-                inputStream.close();
-            }
-            if (bufferedInputStream != null) {
-                bufferedInputStream.close();
-            }
-            if (bufferedOutputStream != null) {
-                bufferedOutputStream.flush();
-                bufferedOutputStream.close();
-            }
-            // 删除临时文件夹中的压缩包
-            taskFilesZip.delete();
-        }
+        // 将压缩包写入到response的输出流中
+        FileUtils.copyFile(taskFilesZip, response.getOutputStream());
+        // 获取当前登陆的用户
+        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        log.info("管理员【{}】，下载了：【{}】下的【{}】批次下所有作业", loginUser.getUser().getName(), course.getCourseName(), batch.getBatchName());
+        // 删除临时文件夹中的压缩包
+        taskFilesZip.delete();
     }
 
+    /**
+     * TODO 通知管理员批次的提交情况
+     *
+     * @Author DengChao
+     * @Date 2023/3/26 22:26
+     */
     private void noticeCommitDetail(Course course, Batch batch) {
         // 查询管理员，不包含系统管理员
         List<User> managerList = userMapper.selectList(new QueryWrapper<User>().eq("role_id", 2));
