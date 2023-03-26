@@ -155,14 +155,13 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
                 // 邮件标题
                 String subject = "作业提交成功通知";
                 // 正文模板
-                String emailText =
-                        """
-                                您的作业提交成功啦！
-                                课程：%s
-                                批次：%s
-                                提交人：%s
-                                提交时间：%s
-                                """.formatted(course.getCourseName(), belongBatch.getBatchName(), loginUser.getUser().getName(), commitDate);
+                String emailText = """
+                        您的作业提交成功啦！
+                        课程：%s
+                        批次：%s
+                        提交人：%s
+                        提交时间：%s
+                        """.formatted(course.getCourseName(), belongBatch.getBatchName(), loginUser.getUser().getName(), commitDate);
 
                 Email email = new Email(loginUser.getUser().getEmail(), subject, emailText);
                 sendMailService.sendSimpleMail(email);
@@ -241,20 +240,20 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         response.setHeader("Access-Control-Expose-Headers", "exception");
         Task task = taskMapper.selectById(taskId);
         if (Objects.isNull(task)) {
-            response.setHeader("exception", "task not exist");
-            throw new GlobalBusinessException(800, "该作业不存在");
+            response.setHeader("exception", URLEncoder.encode("该作业不存在，无法下载", StandardCharsets.UTF_8));
+            throw new GlobalBusinessException(800, "该作业不存在，无法下载");
         }
         // 查询该作业所属的批次是否已截止，已截止才可以下载
         Batch batch = batchMapper.selectById(task.getBelongBatchId());
-        if (batch.getEndTime().after(new Date())) {
-            response.setHeader("exception", "task batch not end");
+        if (batch.getEndTime().after(new Date()) || batch.getEndTime().equals(GMTDate)) {
+            response.setHeader("exception", URLEncoder.encode("所属批次还未截止，无法下载", StandardCharsets.UTF_8));
             throw new GlobalBusinessException(800, "所属批次还未截止，无法下载");
         }
 
         File taskFile = new File(task.getFilePath());
         if (!taskFile.exists()) {
-            response.setHeader("exception", "task file not exist");
-            throw new GlobalBusinessException(800, "该作业文件不存在");
+            response.setHeader("exception", URLEncoder.encode("该作业文件不存在，文件系统中被人为删除了", StandardCharsets.UTF_8));
+            throw new GlobalBusinessException(800, "该作业文件不存在，文件系统中被人为删除了");
         }
         //在vue的response中显示Content-Disposition
         response.setHeader("Access-Control-Expose-Headers", "Content-Disposition");
@@ -265,7 +264,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         response.setHeader("Content-Disposition", "attachment;filename=" + filename);
         response.setHeader("Content-Length", String.valueOf(taskFile.length()));
 
-        response.setContentType("application/octet-stream;charset=UTF-8");
+        response.setContentType("application/octet-stream; charset=UTF-8");
         InputStream inputStream = null;
         BufferedInputStream bufferedInputStream = null;
         BufferedOutputStream bufferedOutputStream = null;
@@ -301,7 +300,6 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
 
     @Override
     public void getBatchFile(String batchId, HttpServletResponse response) throws IOException {
-
         // 通过响应头通知前端异常信息
         response.setHeader("Access-Control-Expose-Headers", "exception");
         // 设置响应类型为文本
@@ -421,25 +419,23 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
 
         if (alreadyCount == 20L || alreadyCount == 30L || alreadyCount == 40L || alreadyCount == 50L) {
             // 邮件通知正文
-            String emailTemplate =
-                    """
-                            课程：%s
-                            批次：%s
-                            已交人数：%s
-                            网站地址：https://task.belongme.top
-                            """.formatted(course.getCourseName(), batch.getBatchName(), alreadyCount);
+            String emailTemplate = """
+                    课程：%s
+                    批次：%s
+                    已交人数：%s
+                    网站地址：https://task.belongme.top
+                    """.formatted(course.getCourseName(), batch.getBatchName(), alreadyCount);
             //发送邮件通知管理员
             Email email = new Email(sendTo.toString(), "作业收集进度通知", emailTemplate);
             sendMailService.sendSimpleMail(email);
         } else if (alreadyCount.equals(userCount)) {
             // 邮件通知正文
-            String emailTemplate =
-                    """
-                            课程：%s
-                            批次：%s
-                            作业已经收集完毕啦，快去下载吧！
-                            网站地址：https://task.belongme.top
-                            """.formatted(course.getCourseName(), batch.getBatchName());
+            String emailTemplate = """
+                    课程：%s
+                    批次：%s
+                    作业已经收集完毕啦，快去下载吧！
+                    网站地址：https://task.belongme.top
+                    """.formatted(course.getCourseName(), batch.getBatchName());
             //发送邮件通知管理员
             Email email = new Email(sendTo.toString(), "作业收集进度通知", emailTemplate);
             sendMailService.sendSimpleMail(email);

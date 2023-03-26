@@ -63,12 +63,13 @@ public class TaskDetailsServiceImpl extends ServiceImpl<TaskDetailsMapper, TaskD
 
             // 获取作业文件
             File taskFile = new File(taskDetails.getFilePath());
-            // 获取作业文件大小
-            long taskFileSize = FileUtils.sizeOf(taskFile);
-            // 设置作业文件大小
-            taskDetails.setFileSize(taskFileSize);
+            if (taskFile.exists()) {
+                // 获取作业文件大小
+                long taskFileSize = FileUtils.sizeOf(taskFile);
+                // 设置作业文件大小
+                taskDetails.setFileSize(taskFileSize);
+            }
         });
-
         return taskDetailsIPage;
     }
 }
