@@ -77,7 +77,6 @@ public class ExcelServiceImpl implements ExcelService {
             response.setContentType("application/octet-stream;charset=UTF-8");
 
             FileUtils.copyFile(excelFile, response.getOutputStream());
-            log.info("文件下载成功{}", excelFile.getAbsolutePath());
             // 删除临时文件
             excelFile.delete();
             return new Result(200, "请求成功");
