@@ -1,6 +1,6 @@
 # 拯救学习委员之作业管理系统—后端部分
 
-# 前端部分：<a href="https://github.com/DangerFickle/Task-Manage-Front">拯救学习委员之作业管理系统—前端部分</a>
+# 前端部分：<a href="https://github.com/DangerFickle/Task-Manage-Front" target="_blank">拯救学习委员之作业管理系统—前端部分</a>
 
 
 
