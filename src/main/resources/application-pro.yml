@@ -23,8 +23,8 @@ spring:
     date-format: "yyyy-MM-dd HH:mm:ss"
   mail:
     host: smtp.qq.com
-    username: csgzs@foxmail.com
-    password: lbxksktfjusrdgij
+    username: 你的QQ邮箱账号
+    password: 你的QQ邮箱授权码
     default-encoding: UTF-8
     # 配置邮件发送者昵称
     nickname: "嗨嗐嗨作业提交管理系统"
