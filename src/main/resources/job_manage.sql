@@ -11,7 +11,7 @@
  Target Server Version : 50650
  File Encoding         : 65001
 
- Date: 26/03/2023 22:21:11
+ Date: 02/05/2023 22:30:41
 */
 
 SET NAMES utf8mb4;
@@ -40,12 +40,8 @@ CREATE TABLE `job_batch`  (
   CONSTRAINT `job_batch_ibfk_1` FOREIGN KEY (`creator_id`) REFERENCES `job_user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `job_batch_ibfk_2` FOREIGN KEY (`modifier_id`) REFERENCES `job_user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `job_batch_ibfk_3` FOREIGN KEY (`belong_course_id`) REFERENCES `job_course` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 1638926902552973314 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '批次表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1644612198779088899 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '批次表' ROW_FORMAT = DYNAMIC;
 
--- ----------------------------
--- Records of job_batch
--- ----------------------------
-INSERT INTO `job_batch` VALUES (1627616322357637122, '测试批次', '测试批次', '2023-04-02 16:50:53.000', '/www/wwwroot/JavaProject/TaskManage-Back/JobManage/测试课程/测试批次', 1625772321090387969, 1, 1, '2023-02-20 18:29:05', '2023-03-26 16:50:54');
 
 -- ----------------------------
 -- Table structure for job_course
@@ -66,12 +62,8 @@ CREATE TABLE `job_course`  (
   UNIQUE INDEX `course_name`(`course_name`, `folder_path`) USING BTREE,
   INDEX `creator_id`(`creator_id`) USING BTREE,
   CONSTRAINT `job_course_ibfk_1` FOREIGN KEY (`creator_id`) REFERENCES `job_user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 1626420561745833986 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '课程表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1644612138012012546 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '课程表' ROW_FORMAT = DYNAMIC;
 
--- ----------------------------
--- Records of job_course
--- ----------------------------
-INSERT INTO `job_course` VALUES (1625772321090387969, '测试课程', '测试课程', '/www/wwwroot/JavaProject/TaskManage-Back/JobManage/测试课程', 1, 1, '2023-02-15 16:21:41', '2023-02-15 16:21:41', 0, 1);
 
 -- ----------------------------
 -- Table structure for job_menu
@@ -227,11 +219,7 @@ CREATE TABLE `job_task`  (
   INDEX `belong_batch_id`(`belong_batch_id`) USING BTREE,
   CONSTRAINT `job_task_ibfk_1` FOREIGN KEY (`uploader_id`) REFERENCES `job_user` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT,
   CONSTRAINT `job_task_ibfk_2` FOREIGN KEY (`belong_batch_id`) REFERENCES `job_batch` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 1638937266757832707 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '作业表' ROW_FORMAT = DYNAMIC;
-
--- ----------------------------
--- Records of job_task
--- ----------------------------
+) ENGINE = InnoDB AUTO_INCREMENT = 1653375962756169731 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '作业表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Table structure for job_user
@@ -254,7 +242,7 @@ CREATE TABLE `job_user`  (
   UNIQUE INDEX `idx_username`(`username`) USING BTREE,
   INDEX `role_id`(`role_id`) USING BTREE,
   CONSTRAINT `job_user_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `job_role` (`id`) ON DELETE RESTRICT ON UPDATE RESTRICT
-) ENGINE = InnoDB AUTO_INCREMENT = 1638936829086404610 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '用户表' ROW_FORMAT = DYNAMIC;
+) ENGINE = InnoDB AUTO_INCREMENT = 1642899650329473026 CHARACTER SET = utf8 COLLATE = utf8_general_ci COMMENT = '用户表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of job_user
