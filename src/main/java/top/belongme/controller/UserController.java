@@ -6,8 +6,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import top.belongme.beanconverter.UserConverter;
 import top.belongme.exception.GlobalBusinessException;
-import top.belongme.model.pojo.Course;
+import top.belongme.model.dto.UserDTO;
 import top.belongme.model.pojo.user.User;
 import top.belongme.model.result.Result;
 import top.belongme.model.vo.*;
@@ -31,6 +32,9 @@ import java.util.Objects;
 public class UserController {
     @Resource
     private UserService userService;
+
+    @Resource
+    private UserConverter userConverter;
 
     /**
      * TODO 获取用户信息
@@ -84,7 +88,7 @@ public class UserController {
      */
     @PreAuthorize("hasAuthority('job:user:select')")
     @GetMapping("/noCommitUserList/{page}/{limit}")
-    public Result getNoCommitUserList(@PathVariable Long page,
+    public Result<IPage<UserDTO>> getNoCommitUserList(@PathVariable Long page,
                                       @PathVariable Long limit,
                                       @Valid TaskDetailsQueryVo taskDetailsQueryVo,
                                       BindingResult result) {
@@ -95,18 +99,21 @@ public class UserController {
         Page<User> pageParam = new Page<>(page, limit);
         //调用service方法
         IPage<User> pageModel = userService.getNotCommitUserList(pageParam, taskDetailsQueryVo);
-        return new Result<>(200, "请求成功", pageModel);
+
+        IPage<UserDTO> userDTOIPage = userConverter.convertPage(pageModel);
+        return new Result<>(200, "请求成功", userDTOIPage);
     }
 
     @PreAuthorize("hasAuthority('job:user:update')")
     @GetMapping("/listPage/{page}/{limit}")
-    public Result<IPage<User>> getUserList(@PathVariable Long page,
+    public Result<IPage<UserDTO>> getUserList(@PathVariable Long page,
                                            @PathVariable Long limit,
                                            UserVo userVo) {
         //创建page对象
         Page<User> pageParam = new Page<>(page, limit);
         IPage<User> pageModel = userService.selectPage(pageParam, userVo);
-        return new Result<>(200, "请求成功", pageModel);
+        IPage<UserDTO> userDTOIPage = userConverter.convertPage(pageModel);
+        return new Result<>(200, "请求成功", userDTOIPage);
     }
 
     @PreAuthorize("hasAuthority('job:user:insert')")
@@ -135,8 +142,10 @@ public class UserController {
      */
     @PreAuthorize("hasAuthority('job:user:select')")
     @GetMapping("/getUserById/{id}")
-    public Result<User> getUserById(@PathVariable("id") String userId) {
-        return userService.getUserById(userId);
+    public Result<UserDTO> getUserById(@PathVariable("id") String userId) {
+        Result<User> result = userService.getUserById(userId);
+        UserDTO userDTO = userConverter.convertPage(result.getData());
+        return Result.ok(userDTO);
     }
 
     /**

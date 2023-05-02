@@ -1,6 +1,5 @@
 package top.belongme;
 
-import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.web.servlet.ServletComponentScan;
@@ -17,7 +16,6 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
  */
 @SpringBootApplication
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-@MapperScan("top.belongme.mapper")
 @ServletComponentScan("top.belongme.filter")
 public class TaskManageApplication {
     public static void main(String[] args) {

@@ -2,10 +2,13 @@ package top.belongme.controller;
 
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import org.springframework.beans.BeanUtils;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import top.belongme.exception.GlobalBusinessException;
+import top.belongme.beanconverter.BatchConverter;
+import top.belongme.model.dto.BatchDTO;
 import top.belongme.model.pojo.Batch;
 import top.belongme.model.result.Result;
 import top.belongme.model.vo.BatchQueryVo;
@@ -29,6 +32,9 @@ public class BatchController {
     @Resource
     private BatchService batchService;
 
+    @Resource
+    private BatchConverter batchConverter;
+
     /**
      * TODO 获取批次列表，分页查询 + 模糊查询
      *
@@ -37,14 +43,17 @@ public class BatchController {
      */
     @PreAuthorize("hasAuthority('job:batch:select')")
     @GetMapping("listPage/{page}/{limit}")
-    public Result<IPage<Batch>> getBatchList(@PathVariable Long page,
+    public Result<IPage<BatchDTO>> getBatchList(@PathVariable Long page,
                                              @PathVariable Long limit,
                                              BatchQueryVo batchQueryVo) {
         //创建page对象
         Page<Batch> pageParam = new Page<>(page, limit);
         //调用service方法
         IPage<Batch> pageModel = batchService.selectPage(pageParam, batchQueryVo);
-        return new Result<>(200, "请求成功", pageModel);
+
+        // 将Batch转换为BatchDTO
+        IPage<BatchDTO> batchDTOIPage = batchConverter.convertPage(pageModel);
+        return new Result<>(200, "请求成功", batchDTOIPage);
     }
 
     /**
@@ -55,14 +64,16 @@ public class BatchController {
      */
     @PreAuthorize("hasAuthority('job:batch:select')")
     @GetMapping("listPageIsCommit/{page}/{limit}")
-    public Result<IPage<Batch>> getBatchListIsCommit(@PathVariable Long page,
+    public Result<IPage<BatchDTO>> getBatchListIsCommit(@PathVariable Long page,
                                                      @PathVariable Long limit,
                                                      BatchQueryVo batchQueryVo) {
         //创建page对象
         Page<Batch> pageParam = new Page<>(page, limit);
         //调用service方法
         IPage<Batch> pageModel = batchService.selectPageIsCommit(pageParam, batchQueryVo);
-        return new Result<>(200, "请求成功", pageModel);
+        // 将Batch转换为BatchDTO
+        IPage<BatchDTO> batchDTOIPage = batchConverter.convertPage(pageModel);
+        return new Result<>(200, "请求成功", batchDTOIPage);
     }
 
     /**
@@ -73,14 +84,16 @@ public class BatchController {
      */
     @PreAuthorize("hasAuthority('job:batch:select')")
     @GetMapping("listPageIsCommitAndCount/{page}/{limit}")
-    public Result<IPage<Batch>> getBatchListIsCommitAndCount(@PathVariable Long page,
+    public Result<IPage<BatchDTO>> getBatchListIsCommitAndCount(@PathVariable Long page,
                                                              @PathVariable Long limit,
                                                              BatchQueryVo batchQueryVo) {
         //创建page对象
         Page<Batch> pageParam = new Page<>(page, limit);
         //调用service方法
         IPage<Batch> pageModel = batchService.selectPageIsCommitAndCount(pageParam, batchQueryVo);
-        return new Result<>(200, "请求成功", pageModel);
+        // 将Batch转换为BatchDTO
+        IPage<BatchDTO> batchDTOIPage = batchConverter.convertPage(pageModel);
+        return new Result<>(200, "请求成功", batchDTOIPage);
     }
 
     /**
@@ -91,9 +104,11 @@ public class BatchController {
      */
     @PreAuthorize("hasAuthority('job:batch:select')")
     @GetMapping("/get/{batchId}")
-    public Result getBatch(@PathVariable String batchId) {
+    public Result<BatchDTO> getBatch(@PathVariable String batchId) {
         Batch batch = batchService.getById(batchId);
-        return new Result<>(200, "请求成功", batch);
+        BatchDTO batchDTO = new BatchDTO();
+        BeanUtils.copyProperties(batch, batchDTO);
+        return new Result<>(200, "请求成功", batchDTO);
     }
 
     /**

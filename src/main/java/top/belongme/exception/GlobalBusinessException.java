@@ -1,6 +1,7 @@
 package top.belongme.exception;
 
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @Title: CourseException
@@ -9,6 +10,7 @@ import lombok.Data;
  * @Author DengChao
  * @Date 2023/2/911:03
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class GlobalBusinessException extends RuntimeException {
     private Integer code;

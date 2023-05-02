@@ -214,7 +214,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public Result<User> getUserById(String userId) {
         User user = baseMapper.selectById(userId);
-        user.setPassword(null);
         return new Result<>(200, "请求成功", user);
     }
 

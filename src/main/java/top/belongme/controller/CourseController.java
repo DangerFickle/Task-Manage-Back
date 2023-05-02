@@ -7,6 +7,8 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import top.belongme.exception.GlobalBusinessException;
+import top.belongme.beanconverter.CourseConverter;
+import top.belongme.model.dto.CourseDTO;
 import top.belongme.model.pojo.Course;
 import top.belongme.model.result.Result;
 import top.belongme.model.vo.CourseQueryVo;
@@ -32,6 +34,9 @@ public class CourseController {
     @Resource
     CourseService courseService;
 
+    @Resource
+    private CourseConverter courseConverter;
+
     /**
      * TODO 获取课程列表，分页查询 + 模糊查询
      *
@@ -40,14 +45,16 @@ public class CourseController {
      */
     @PreAuthorize("hasAuthority('job:course:select')")
     @GetMapping("/listPage/{page}/{limit}")
-    public Result<IPage<Course>> getCourseList(@PathVariable Long page,
+    public Result<IPage<CourseDTO>> getCourseList(@PathVariable Long page,
                                                @PathVariable Long limit,
                                                CourseQueryVo courseQueryVo) {
         //创建page对象
         Page<Course> pageParam = new Page<>(page, limit);
         //调用service方法
         IPage<Course> pageModel = courseService.selectPage(pageParam, courseQueryVo);
-        return new Result<>(200, "请求成功", pageModel);
+
+        IPage<CourseDTO> courseDTOIPage = courseConverter.convertPage(pageModel);
+        return new Result<>(200, "请求成功", courseDTOIPage);
     }
 
     /**
@@ -58,9 +65,10 @@ public class CourseController {
      */
     @PreAuthorize("hasAuthority('job:course:select')")
     @GetMapping("/listOnlyEnabled")
-    public Result<List<Course>> getCourseListOnlyEnabled() {
+    public Result<List<CourseDTO>> getCourseListOnlyEnabled() {
         List<Course> courseList = courseService.list(new QueryWrapper<Course>().eq("status", 1));
-        return new Result<>(200, "请求成功", courseList);
+        List<CourseDTO> courseDTOList = courseConverter.convertToDTOList(courseList);
+        return new Result<>(200, "请求成功", courseDTOList);
     }
 
     /**
@@ -127,8 +135,9 @@ public class CourseController {
      */
     @PreAuthorize("hasAuthority('job:course:select')")
     @GetMapping("/get/{courseId}")
-    public Result getCourseById(@PathVariable String courseId) {
+    public Result<CourseDTO> getCourseById(@PathVariable String courseId) {
         Course course = courseService.getById(courseId);
-        return new Result(200, "请求成功", course);
+        CourseDTO courseDTO = courseConverter.convertToDTO(course);
+        return new Result(200, "请求成功", courseDTO);
     }
 }

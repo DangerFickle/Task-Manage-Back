@@ -39,4 +39,8 @@ public class Result<T> {
         this.msg = msg;
         this.data = data;
     }
+
+    public static <R> Result<R> ok(R data) {
+        return new Result<>(200, "操作成功", data);
+    }
 }

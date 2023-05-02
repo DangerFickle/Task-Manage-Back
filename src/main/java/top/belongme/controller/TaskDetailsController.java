@@ -32,7 +32,7 @@ public class TaskDetailsController {
     private TaskDetailsService taskDetailsService;
     @PreAuthorize("hasAuthority('job:taskDetail:select')")
     @GetMapping("/listPage/{page}/{limit}")
-    public Result getBatchList(@PathVariable Long page,
+    public Result<IPage<TaskDetails>> getBatchList(@PathVariable Long page,
                                @PathVariable Long limit,
                                @Valid TaskDetailsQueryVo taskDetailsQueryVo,
                                BindingResult result){
