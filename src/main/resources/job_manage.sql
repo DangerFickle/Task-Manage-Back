@@ -4,7 +4,7 @@
  Source Server         : 作业管理系统
  Source Server Type    : MySQL
  Source Server Version : 50650
- Source Host           : 162.14.83.179:3306
+ Source Host           : 127.0.0.1:3306
  Source Schema         : job_manage
 
  Target Server Type    : MySQL
