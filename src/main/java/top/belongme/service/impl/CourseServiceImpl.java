@@ -19,6 +19,7 @@ import top.belongme.model.pojo.user.LoginUser;
 import top.belongme.model.result.Result;
 import top.belongme.model.vo.CourseQueryVo;
 import top.belongme.service.CourseService;
+import top.belongme.utils.LoginUserUtil;
 
 import javax.annotation.Resource;
 import java.io.File;
@@ -61,7 +62,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
         // 根据课程名构建同名文件夹
         File courseFolder = new File(filePathBySystem + course.getCourseName());
         // 获取当前登录用户
-        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
         // 设置创建人和修改人
         course.setCreatorId(loginUser.getUser().getId());
         course.setModifierId(loginUser.getUser().getId());
@@ -119,7 +120,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
                 throw new GlobalBusinessException(800, "课程对应的文件夹删除失败");
             }
             // 获取当前登录用户
-            LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
 
             log.info("管理员【{}】，删除了课程【{}】", loginUser.getUser().getName(), course.getCourseName());
             return new Result(200, "课程删除成功");
@@ -214,7 +215,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
         // 判断是否要修改数据库中的课程记录
         if (isModify) {
             // 获取当前登录用户
-            LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
             // 设置修改者id
             course.setModifierId(loginUser.getUser().getId());
             baseMapper.updateById(course);
@@ -242,7 +243,7 @@ public class CourseServiceImpl extends ServiceImpl<CourseMapper, Course> impleme
             throw new GlobalBusinessException(800, "课程状态同步失败");
         } else {
             // 获取当前登录用户
-            LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
             // 修改修改者id
             course.setModifierId(loginUser.getUser().getId());
             int update = baseMapper.updateById(course);

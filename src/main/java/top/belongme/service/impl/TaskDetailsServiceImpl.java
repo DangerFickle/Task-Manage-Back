@@ -8,7 +8,6 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.stereotype.Service;
 import top.belongme.exception.GlobalBusinessException;
 import top.belongme.mapper.BatchMapper;
-import top.belongme.mapper.CourseMapper;
 import top.belongme.mapper.TaskDetailsMapper;
 import top.belongme.model.pojo.Batch;
 import top.belongme.model.pojo.task.TaskDetails;

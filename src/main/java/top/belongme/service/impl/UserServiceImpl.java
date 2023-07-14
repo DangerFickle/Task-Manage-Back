@@ -5,7 +5,6 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
@@ -25,6 +24,7 @@ import top.belongme.model.vo.ResetPasswordVo;
 import top.belongme.model.vo.TaskDetailsQueryVo;
 import top.belongme.model.vo.UserVo;
 import top.belongme.service.UserService;
+import top.belongme.utils.LoginUserUtil;
 import top.belongme.utils.RedisCache;
 
 import javax.annotation.Resource;
@@ -71,7 +71,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
             throw new GlobalBusinessException(800, "该批次不存在");
         }
         log.info("获取未交人员列表成功");
-        return baseMapper.getNotCommitUserList(pageParam, taskDetailsQueryVo);
+        IPage<User> userIPage = baseMapper.getNotCommitUserList(pageParam, taskDetailsQueryVo);
+        userIPage.getRecords().forEach(user -> user.setHasEmail(Objects.nonNull(user.getEmail())));
+        return userIPage;
     }
 
     /**
@@ -83,7 +85,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public Result resetPassword(ResetPasswordVo resetPasswordVo) {
         // 获取当前登陆的用户
-        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
         // 获取当前登陆用户的id
         String userId = loginUser.getUser().getId();
         // 查询该用户的信息
@@ -121,7 +123,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Override
     public Result updateEmail(EmailVo emailVo) {
         // 获取当前登陆的用户
-        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
         // 获取当前登陆用户的id
         String userId = loginUser.getUser().getId();
         // 查询该用户的信息
@@ -177,7 +179,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (insert <= 0) {
             throw new GlobalBusinessException(800, "用户添加失败");
         }
-        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
         log.info("管理员【{}】，添加了用户【{}】", loginUser.getUser().getName(), user.getName());
         return new Result(200, "用户添加成功");
     }
@@ -206,7 +208,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (update <= 0) {
             throw new GlobalBusinessException(800, "用户修改失败");
         }
-        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
         log.info("管理员【{}】，更新了用户【{}】的信息", loginUser.getUser().getName(), oldUser.getName());
         return new Result(200, "用户修改成功");
     }
@@ -240,7 +242,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (delete <= 0) {
             throw new GlobalBusinessException(800, "用户删除失败");
         }
-        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
         log.info("管理员【{}】删除了用户【{}】", loginUser.getUser().getName(), user.getName());
         return new Result(200, "用户删除成功");
     }

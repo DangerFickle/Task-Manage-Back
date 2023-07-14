@@ -28,6 +28,7 @@ spring:
     default-encoding: UTF-8
     # 配置邮件发送者昵称
     nickname: "嗨嗐嗨作业提交管理系统"
+    web-site: "你的网站地址，发送邮件时会显示在邮件内容中"
     #其他参数
     properties:
       mail:

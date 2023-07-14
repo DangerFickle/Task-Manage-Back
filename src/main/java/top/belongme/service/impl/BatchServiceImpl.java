@@ -9,6 +9,7 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import top.belongme.constant.Constants;
 import top.belongme.exception.GlobalBusinessException;
 import top.belongme.mapper.BatchMapper;
 import top.belongme.mapper.CourseMapper;
@@ -22,6 +23,7 @@ import top.belongme.model.pojo.user.User;
 import top.belongme.model.result.Result;
 import top.belongme.model.vo.BatchQueryVo;
 import top.belongme.service.BatchService;
+import top.belongme.utils.LoginUserUtil;
 
 import javax.annotation.Resource;
 import java.io.File;
@@ -90,7 +92,7 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
         }
         batch.setFolderPath(batchFolderName);
         // 获取当前登录用户
-        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
         // 设置创建者id
         batch.setCreatorId(loginUser.getUser().getId());
         // 设置修改者id
@@ -280,7 +282,7 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
 
         if (isModify) {
             // 获取当前登录用户
-            LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
             // 设置修改者id
             batch.setModifierId(loginUser.getUser().getId());
             int update = baseMapper.updateById(batch);
@@ -322,7 +324,7 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
             try {
                 FileUtils.deleteDirectory(batchFolder);
                 // 获取当前登陆的用户
-                LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
                 // 获取批次的所属课程
                 Course course = courseMapper.selectById(batch.getBelongCourseId());
                 log.info("管理员【{}】，删除了【{}】课程下的【{}】批次", loginUser.getUser().getName(), course.getCourseName(), batch.getBatchName());
@@ -347,12 +349,12 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
 
         // 判断原批次是否已截止
         if (oldBatch.getEndTime().equals(GMTDate)) {
-            oldBatch.setIsEnd(0);
+            oldBatch.setIsEnd(Constants.NO);
         } else {
             if (oldBatch.getEndTime().compareTo(new Date()) <= 0) {
-                oldBatch.setIsEnd(1);
+                oldBatch.setIsEnd(Constants.YES);
             } else {
-                oldBatch.setIsEnd(0);
+                oldBatch.setIsEnd(Constants.NO);
             }
         }
 
@@ -372,7 +374,7 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
         }
 
         // 获取当前登录用户
-        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
         // 设置修改者id
         batch.setModifierId(loginUser.getUser().getId());
         int update = baseMapper.updateById(batch);
@@ -394,7 +396,7 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
             log.error("查询是否可提交失败，因为传入的课程不存在");
             throw new GlobalBusinessException(800, "该课程不存在");
         }
-        if (belongCourse.getStatus() == 0) {
+        if (Objects.equals(belongCourse.getStatus(), Constants.NO)) {
             log.error("查询是否可提交失败，因为传入的课程已被禁用");
             throw new GlobalBusinessException(800, "该课程已被禁用");
         }
@@ -402,7 +404,7 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
         IPage<Batch> batchIPage = this.selectPage(pageParam, batchQueryVo);
         List<Batch> records = batchIPage.getRecords();
         // 获取当前登陆的用户
-        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
         records.forEach(batch -> {
             // 根据所属批次id和当前登陆用户id查询任务表
             QueryWrapper<Task> taskQueryWrapper = new QueryWrapper<>();
@@ -414,22 +416,22 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
             Task task = taskMapper.selectOne(taskQueryWrapper);
             if (Objects.nonNull(task)) {
                 // 设置批次为已提交，1为已提交，0为未提交
-                batch.setIsCommit(1);
+                batch.setIsCommit(Constants.YES);
             } else {
-                batch.setIsCommit(0);
+                batch.setIsCommit(Constants.NO);
             }
 
             // 判断批次的截止时间是否是格林威治时间，是则设置为未截止，否则设置为已截止
             if (Objects.equals(batch.getEndTime(), GMTDate)) {
-                batch.setIsEnd(0);
+                batch.setIsEnd(Constants.NO);
             } else {
                 // 判断批次是否已截止，已截止为true
                 int compare = batch.getEndTime().compareTo(new Date());
-                if (compare <= 0) {
+                if (compare <= Constants.NO) {
                     // 设置批次的截止状态，1为已截止，0为未截止
-                    batch.setIsEnd(1);
+                    batch.setIsEnd(Constants.YES);
                 } else {
-                    batch.setIsEnd(0);
+                    batch.setIsEnd(Constants.NO);
                 }
             }
 

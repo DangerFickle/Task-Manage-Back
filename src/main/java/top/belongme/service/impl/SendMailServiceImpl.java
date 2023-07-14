@@ -9,6 +9,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.springframework.util.Assert;
 import org.springframework.util.StringUtils;
+import top.belongme.constant.Constants;
 import top.belongme.exception.GlobalBusinessException;
 import top.belongme.mapper.BatchMapper;
 import top.belongme.mapper.CourseMapper;
@@ -30,6 +31,7 @@ import java.util.Objects;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @Slf4j
@@ -44,6 +46,9 @@ public class SendMailServiceImpl implements SendMailService {
 
     @Value("${spring.mail.nickname}")
     private String nickname;
+
+    @Value("${spring.mail.web-site}")
+    private String webSite;
 
     @Resource
     private BatchMapper batchMapper;
@@ -135,7 +140,7 @@ public class SendMailServiceImpl implements SendMailService {
         // 查询课程信息
         Course course = courseMapper.selectById(batch.getBelongCourseId());
         if (Objects.nonNull(course)) {
-            if (course.getStatus() == 0) {
+            if (Objects.equals(course.getStatus(), Constants.NO)) {
                 log.error("邮件提醒失败，因为所属课程已被禁用");
                 throw new GlobalBusinessException(800, "所属课程已被禁用");
             }
@@ -159,8 +164,8 @@ public class SendMailServiceImpl implements SendMailService {
                         课程：%s
                         批次：%s
                         请登陆系统提交您的作业
-                        网站地址：https://task.belongme.top
-                        """.formatted(course.getCourseName(), batch.getBatchName());
+                        网站地址：%s
+                        """.formatted(course.getCourseName(), batch.getBatchName(), webSite);
 
         Email email = new Email(user.getEmail(), "作业提交提醒", remindTemplate);
         // 发送邮件

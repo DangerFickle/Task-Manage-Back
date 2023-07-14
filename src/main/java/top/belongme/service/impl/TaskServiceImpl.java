@@ -5,10 +5,9 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import net.lingala.zip4j.ZipFile;
 import org.apache.commons.io.FileUtils;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.FileCopyUtils;
 import org.springframework.web.multipart.MultipartFile;
 import top.belongme.exception.GlobalBusinessException;
 import top.belongme.mapper.BatchMapper;
@@ -24,13 +23,15 @@ import top.belongme.model.pojo.user.User;
 import top.belongme.model.result.Result;
 import top.belongme.service.SendMailService;
 import top.belongme.service.TaskService;
+import top.belongme.utils.LoginUserUtil;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Date;
@@ -73,6 +74,8 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
     @Resource
     private SimpleDateFormat simpleDateFormat;
 
+    @Value("${spring.mail.web-site}")
+    private String webSite;
 
     /**
      * TODO 提交作业
@@ -102,7 +105,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         }
 
         // 获取当前登陆用户
-        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
         // 在作业表中查询该批次下该用户是否已经提交过作业
         QueryWrapper<Task> taskQueryWrapper = new QueryWrapper<>();
         taskQueryWrapper.eq("belong_batch_id", belongBatchId);
@@ -171,7 +174,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
             log.info("【{}】作业提交成功，所属课程：{}，所属批次：{}", loginUser.getUser().getName(), course.getCourseName(), belongBatch.getBatchName());
 
             // 通知管理员
-            this.noticeCommitDetail(course, belongBatch);
+//            this.noticeCommitDetail(course, belongBatch);
 
             return new Result(200, "作业提交成功");
         } catch (IOException e) {
@@ -201,7 +204,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         }
 
         // 获取当前登陆的用户
-        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
         QueryWrapper<Task> taskQueryWrapper = new QueryWrapper<>();
         taskQueryWrapper.eq("belong_batch_id", batchId);
         taskQueryWrapper.eq("uploader_id", loginUser.getUser().getId());
@@ -268,7 +271,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         // 将文件流写入到response的输出流中
         FileUtils.copyFile(taskFile, response.getOutputStream());
         // 获取当前登陆的用户
-        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
         // 获取所属课程
         Course course = courseMapper.selectById(batch.getBelongCourseId());
         // 获取作业的提交人
@@ -281,7 +284,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
     public void getTaskFileByBelongBatchId(String belongBatchId, HttpServletResponse response) throws IOException {
         response.setHeader("Access-Control-Expose-Headers", "exception");
         // 获取当前登陆的用户
-        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
         // 根据批次id和当前登陆的用户id查询作业
         QueryWrapper<Task> taskQueryWrapper = new QueryWrapper<>();
         taskQueryWrapper.eq("belong_batch_id", belongBatchId);
@@ -374,7 +377,7 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         // 将压缩包写入到response的输出流中
         FileUtils.copyFile(taskFilesZip, response.getOutputStream());
         // 获取当前登陆的用户
-        LoginUser loginUser = (LoginUser) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
         log.info("管理员【{}】，下载了：【{}】下的【{}】批次下所有作业", loginUser.getUser().getName(), course.getCourseName(), batch.getBatchName());
         // 删除临时文件夹中的压缩包
         taskFilesZip.delete();
@@ -411,14 +414,16 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
         qw.eq("belong_batch_id", batch.getId());
         Long alreadyCount = taskMapper.selectCount(qw);
 
-        if (alreadyCount == 20L || alreadyCount == 30L || alreadyCount == 40L || alreadyCount == 50L) {
+        // 计算百分比
+        int percent = (int) (alreadyCount / userCount * 100);
+        if (percent >= 90) {
             // 邮件通知正文
             String emailTemplate = """
                     课程：%s
                     批次：%s
                     已交人数：%s
-                    网站地址：https://task.belongme.top
-                    """.formatted(course.getCourseName(), batch.getBatchName(), alreadyCount);
+                    网站地址：%s
+                    """.formatted(course.getCourseName(), batch.getBatchName(), alreadyCount, webSite);
             //发送邮件通知管理员
             Email email = new Email(sendTo.toString(), "作业收集进度通知", emailTemplate);
             sendMailService.sendSimpleMail(email);
@@ -428,8 +433,8 @@ public class TaskServiceImpl extends ServiceImpl<TaskMapper, Task> implements Ta
                     课程：%s
                     批次：%s
                     作业已经收集完毕啦，快去下载吧！
-                    网站地址：https://task.belongme.top
-                    """.formatted(course.getCourseName(), batch.getBatchName());
+                    网站地址：%s
+                    """.formatted(course.getCourseName(), batch.getBatchName(), webSite);
             //发送邮件通知管理员
             Email email = new Email(sendTo.toString(), "作业收集进度通知", emailTemplate);
             sendMailService.sendSimpleMail(email);

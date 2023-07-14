@@ -38,6 +38,8 @@ public class User implements Serializable {
     private String roleName;
     // @Email(message = "邮箱格式错误")
     private String email;
+    @TableField(exist = false)
+    private Boolean hasEmail;
     private String avatar;
     // 状态（1：正常 0：停用）
     private Integer status;

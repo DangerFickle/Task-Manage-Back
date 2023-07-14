@@ -1,10 +1,8 @@
 package top.belongme.model.dto;
 
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
-import javax.validation.constraints.NotBlank;
 import java.util.Date;
 
 /**
@@ -21,7 +19,8 @@ public class UserDTO {
     private String name;
     private String username;
     private String studentNumber;
-    private String email;
+//    private String email;
+    private Boolean hasEmail;
     private String roleId;
     // 状态（1：正常 0：停用）
     private Integer status;
