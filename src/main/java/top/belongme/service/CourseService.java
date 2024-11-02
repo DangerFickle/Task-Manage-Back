@@ -5,9 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import top.belongme.model.pojo.Course;
 import top.belongme.model.result.Result;
-import top.belongme.model.vo.CourseQueryVo;
-
-import java.util.List;
+import top.belongme.model.dto.CourseQueryDTO;
 
 /**
  * @Title: CourseService
@@ -17,9 +15,9 @@ import java.util.List;
  * @Date 2023/2/814:13
  */
 public interface CourseService extends IService<Course> {
-    IPage<Course> selectPage(Page<Course> pageParam, CourseQueryVo courseQueryVo);
+    IPage<Course> selectPage(Page<Course> pageParam, CourseQueryDTO courseQueryDTO);
 
-    Result addCourseAndFolderPath(Course course);
+    Result addCourse(Course course);
 
     Result deleteCourse(String id);
 

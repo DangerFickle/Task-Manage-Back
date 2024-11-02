@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="fastRequestCurrentParamGroup">
+    <option name="className" value="top.belongme.controller.UserController" />
+    <option name="filePath" value="/.fastRequest/collections/ROOT/Task-Manage-Back/UserController~getNoCommitUserList.rapi" />
+    <option name="method" value="getNoCommitUserList" />
+    <option name="methodDescription" value="TODO 根据批次id获取未交用户列表" />
+    <option name="module" value="Task-Manage-Back" />
+    <option name="originUrl" value="/user/noCommitUserList/{page}/{limit}" />
+    <option name="pathParamMap">
+      <map>
+        <entry key="limit">
+          <value>
+            <Object />
+          </value>
+        </entry>
+        <entry key="page">
+          <value>
+            <Object />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="requestParamMap">
+      <map>
+        <entry key="result">
+          <value>
+            <Object />
+          </value>
+        </entry>
+        <entry key="taskDetailsQueryDTO">
+          <value>
+            <Object />
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="returnDocument" value="{&quot;code&quot;:&quot;状态码&quot;,&quot;msg&quot;:&quot;提示信息，如果有错误时，前端可以获取该字段进行提示&quot;,&quot;data&quot;:{}}" />
+    <option name="tempId" value="api_top.belongme.controller.UserController.getNoCommitUserList" />
+    <option name="url" value="/user/noCommitUserList/1/1" />
+  </component>
+</project>

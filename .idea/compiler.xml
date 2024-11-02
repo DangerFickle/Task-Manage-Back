@@ -10,9 +10,6 @@
         <module name="Task-Manage-Back" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="TaskManage-Back" target="1.8" />
-    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">

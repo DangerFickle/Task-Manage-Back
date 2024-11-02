@@ -1,29 +1,17 @@
 package top.belongme.model.dto;
 
-import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
-import java.util.Date;
-
 /**
- * @Title: UserDTO
+ * @Title: UserVo
  * @ProjectName Task-Manage-Back
  * @Description: TODO
  * @Author DengChao
- * @Date 2023/5/21:42
+ * @Date 2023/3/815:40
  */
 @Data
 public class UserDTO {
-    @TableId
-    private String id;
     private String name;
-    private String username;
     private String studentNumber;
-//    private String email;
-    private Boolean hasEmail;
-    private String roleId;
-    // 状态（1：正常 0：停用）
-    private Integer status;
-    private Date createTime;
-    private Date updateTime;
+    private String groupId;
 }

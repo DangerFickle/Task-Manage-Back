@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
-import top.belongme.model.dto.UserDTO;
+import top.belongme.model.vo.UserVO;
 import top.belongme.model.pojo.user.User;
 
 import java.util.ArrayList;
@@ -19,25 +19,25 @@ import java.util.List;
  */
 @Component
 public class UserConverter {
-    public IPage<UserDTO> convertPage(IPage<User> userIPage) {
-        IPage<UserDTO> userDTOIPage = new Page<>();
+    public IPage<UserVO> convertPage(IPage<User> userIPage) {
+        IPage<UserVO> userDTOIPage = new Page<>();
         BeanUtils.copyProperties(userIPage, userDTOIPage);
 
-        List<UserDTO> userDTOList = new ArrayList<>();
+        List<UserVO> userVOList = new ArrayList<>();
 
         userIPage.getRecords().forEach(user -> {
-            UserDTO userDTO = new UserDTO();
-            BeanUtils.copyProperties(user, userDTO);
-            userDTOList.add(userDTO);
+            UserVO userVO = new UserVO();
+            BeanUtils.copyProperties(user, userVO);
+            userVOList.add(userVO);
         });
-        userDTOIPage.setRecords(userDTOList);
+        userDTOIPage.setRecords(userVOList);
         return userDTOIPage;
     }
 
 
-    public UserDTO convertPage(User user) {
-        UserDTO userDTO = new UserDTO();
-        BeanUtils.copyProperties(user, userDTO);
-        return userDTO;
+    public UserVO convertPage(User user) {
+        UserVO userVO = new UserVO();
+        BeanUtils.copyProperties(user, userVO);
+        return userVO;
     }
 }

@@ -8,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Date;
 
@@ -23,12 +24,12 @@ import java.util.Date;
 @AllArgsConstructor
 @Valid
 public class User implements Serializable {
+    @Serial
     private static final long serialVersionUID = -54579041104113736L;
     @TableId
     private String id;
     private String username;
     private String password;
-    @NotBlank(message = "学号不能为空")
     private String name;
     @NotBlank(message = "学号不能为空")
     private String studentNumber;
@@ -41,9 +42,8 @@ public class User implements Serializable {
     @TableField(exist = false)
     private Boolean hasEmail;
     private String avatar;
-    // 状态（1：正常 0：停用）
+    // 状态（0：正常 1：停用）
     private Integer status;
     private Date createTime;
     private Date updateTime;
-
 }

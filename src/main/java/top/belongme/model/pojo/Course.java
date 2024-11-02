@@ -25,10 +25,11 @@ public class Course {
     private String modifierId; // 修改者id
     @TableField(exist = false)
     private String creatorName; // 创建者姓名
-    private String folderPath;
     private String creatorId;
     @NotBlank(message = "课程描述不能为空")
     private String description;
+    private Integer groupMaxMemberSize; // 课程下群组的最大人数
+    private Integer groupMaxSize; // 课程下群组的最大数量，创建课程时通过groupMaxMemberSize和全班人数属性计算
     private Integer status;
     private Date createTime;
     private Date updateTime;

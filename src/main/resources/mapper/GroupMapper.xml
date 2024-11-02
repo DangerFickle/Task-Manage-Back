@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="top.belongme.mapper.GroupMapper">
+
+    <resultMap id="groupMap" type="top.belongme.model.pojo.Group">
+        <id property="id" column="group_id"/>
+        <id property="name" column="name"/>
+        <result property="leader" column="leader"/>
+        <result property="belongCourse" column="belong_course"/>
+        <result property="alreadyMember" column="already_member"/>
+        <result property="groupMaxMemberSize" column="group_max_member_size"/>
+        <result property="createTime" column="create_time"/>
+        <result property="updateTime" column="update_time"/>
+    </resultMap>
+    <resultMap id="groupMemberMap" type="top.belongme.model.pojo.GroupMember" autoMapping="true"/>
+
+    <select id="getGroup" resultMap="groupMap">
+        SELECT t1.id as group_id,
+               t1.name,
+               t1.leader,
+               t1.belong_course,
+               t1.create_time,
+               t1.update_time,
+               t1.already_member,
+               t2.group_max_member_size
+        FROM job_group t1
+                 join job_course t2 on t1.belong_course = t2.id
+                 join job_user_group t3 on t1.id = t3.group_id
+        WHERE t2.id = #{belongCourse}
+          and t3.user_id = #{userId}
+
+    </select>
+
+    <select id="getGroupMember" resultMap="groupMemberMap">
+        select t3.id,
+        t3.name,
+        t3.student_number,
+        t3.email
+        from job_group t1
+        join job_user_group t2
+        on t1.id = t2.group_id
+        join job_user t3
+        on t2.user_id = t3.id
+        <where>
+            t1.id = #{groupId}
+            and t3.id != #{userId}
+            <if test="name != null and name != ''">
+                and t3.name like CONCAT('%',#{name},'%')
+            </if>
+        </where>
+    </select>
+
+    <select id="getGroupId" resultType="String">
+        select t1.id
+        from job_group t1
+                 join job_course t2 on t1.belong_course = t2.id
+                 join job_user_group t3 on t1.id = t3.group_id
+        where t2.id = #{courseId} and t3.user_id = #{userId}
+    </select>
+
+    <select id="selectNoCommitGroupList" resultType="top.belongme.model.pojo.Group">
+        select t3.name,
+        t3.leader,
+        t4.name as leader_name,
+        t3.already_member
+        from job_batch t1
+        join job_course t2
+        on t1.belong_course_id = t2.id
+        join job_group t3
+        on t3.belong_course = t2.id
+        join job_user t4 on t3.leader = t4.id
+        <where>
+            and t1.id = #{dto.belongBatchId}
+            and t3.id not in (select t1.uploader_id
+                            from job_task t1
+                            where t1.belong_batch_id = #{dto.belongBatchId})
+            <if test="dto.groupName != null">
+                and t3.name like CONCAT('%', #{dto.groupName},'%')
+            </if>
+        </where>
+
+    </select>
+
+<!--    <select id="getGroup" resultMap="groupMap">-->
+<!--        select t2.id   as group_id,-->
+<!--               t2.leader,-->
+<!--               t2.belong_course,-->
+<!--               t2.create_time,-->
+<!--               t2.update_time,-->
+<!--               t2.already_member,-->
+<!--               t2.group_max_member_size,-->
+<!--               t2.join_time,-->
+<!--               t3.id   as user_id,-->
+<!--               t3.name as user_name,-->
+<!--               t3.student_number,-->
+<!--               t3.email-->
+<!--        from job_user_group t1-->
+<!--                 join (SELECT t1.id,-->
+<!--                              t1.leader,-->
+<!--                              t1.belong_course,-->
+<!--                              t1.create_time,-->
+<!--                              t1.update_time,-->
+<!--                              t1.already_member as already_member,-->
+<!--                              t2.group_max_member_size,-->
+<!--                              t3.create_time    as join_time-->
+<!--                       FROM job_group t1-->
+<!--                                join job_course t2 on t1.belong_course = t2.id-->
+<!--                                join job_user_group t3 on t1.id = t3.group_id-->
+<!--                                join job_user t4 on t3.user_id = t4.id-->
+<!--                       WHERE t2.id = #{belongCourse}-->
+<!--                         AND t4.id = #{userId}) t2 on t1.group_id = t2.id-->
+<!--                 join job_user t3 on t1.user_id = t3.id-->
+<!--    </select>-->
+</mapper>

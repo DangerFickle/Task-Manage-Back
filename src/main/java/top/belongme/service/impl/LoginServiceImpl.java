@@ -59,7 +59,8 @@ public class LoginServiceImpl implements LoginService {
         String userId = loginUser.getUser().getId();
         String jwt = JwtUtil.createJWT(userId);
         //authenticate存入redis，设置过期时间为半小时
-        redisCache.setCacheObject("login:" + userId, loginUser,  30, TimeUnit.MINUTES);
+        redisCache.setCacheObject("login:" + userId, loginUser,  JwtUtil.JWT_TTL.intValue(), TimeUnit.MILLISECONDS);
+
         //把token响应给前端
         HashMap<String, String> map = new HashMap<>();
         map.put("token", jwt);

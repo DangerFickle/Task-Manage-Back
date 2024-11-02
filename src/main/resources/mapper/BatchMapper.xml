@@ -6,9 +6,9 @@
     <resultMap id="batchMap" type="top.belongme.model.pojo.Batch" autoMapping="true">
         <id column="id" property="id"/>
         <result column="batch_name" property="batchName"/>
+        <result column="batch_type" property="batchType"/>
         <result column="description" property="description"/>
         <result column="end_time" property="endTime"/>
-<!--        <result column="folder_path" property="folderPath"/>-->
         <result column="belong_course_id" property="belongCourseId"/>
         <result column="belong_course_name" property="belongCourseName"/>
         <result column="creator_id" property="creatorId"/>
@@ -21,9 +21,9 @@
     <select id="selectPage" resultMap="batchMap">
         select jb.id,
         jb.batch_name,
+        jb.batch_type,
         jb.description,
         jb.end_time,
-        jb.folder_path,
         jb.belong_course_id,
         jc.course_name as belong_course_name,
         jb.creator_id,
@@ -37,19 +37,20 @@
         join job_user ju1 on jb.creator_id = ju1.id
         join job_user ju2 on jb.modifier_id = ju2.id
         <where>
-            <if test="vo.batchName != null">
-                and jb.batch_name like CONCAT('%',#{vo.batchName},'%')
+            <if test="dto.batchName != null and dto.batchName != ''">
+                and jb.batch_name like CONCAT('%',#{dto.batchName},'%')
             </if>
-            <if test="vo.description != null">
-                and jb.description like CONCAT('%',#{vo.description},'%')
+            <if test="dto.description != null and dto.description != ''">
+                and jb.description like CONCAT('%',#{dto.description},'%')
             </if>
-            <if test="vo.creatorName != null">
-                and ju1.name like CONCAT('%',#{vo.creatorName},'%')
+            <if test="dto.creatorName != null and dto.creatorName != ''">
+                and ju1.name like CONCAT('%',#{dto.creatorName},'%')
             </if>
-            <if test="vo.modifierName != null">
-                and ju2.name like CONCAT('%',#{vo.modifierName},'%')
+            <if test="dto.modifierName != null and dto.modifierName != ''">
+                and ju2.name like CONCAT('%',#{dto.modifierName},'%')
             </if>
-            and jb.belong_course_id = #{vo.belongCourseId}
+            and jb.belong_course_id = #{dto.belongCourseId}
+            and jb.batch_type = #{dto.batchType}
         </where>
         order by id desc
     </select>

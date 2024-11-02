@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
-import top.belongme.model.dto.BatchDTO;
+import top.belongme.model.vo.BatchVO;
 import top.belongme.model.pojo.Batch;
 
 import java.util.ArrayList;
@@ -19,18 +19,18 @@ import java.util.List;
  */
 @Component
 public class BatchConverter {
-    public IPage<BatchDTO> convertPage(IPage<Batch> source) {
-        IPage<BatchDTO> batchDTOIPage = new Page<>();
+    public IPage<BatchVO> convertPage(IPage<Batch> source) {
+        IPage<BatchVO> batchDTOIPage = new Page<>();
 
         BeanUtils.copyProperties(source, batchDTOIPage);
 
-        List<BatchDTO> batchDTOList = new ArrayList<>();
+        List<BatchVO> batchVOList = new ArrayList<>();
         for(Batch batch : source.getRecords()) {
-            BatchDTO batchDTO = new BatchDTO();
-            BeanUtils.copyProperties(batch, batchDTO);
-            batchDTOList.add(batchDTO);
+            BatchVO batchVO = new BatchVO();
+            BeanUtils.copyProperties(batch, batchVO);
+            batchVOList.add(batchVO);
         }
-        batchDTOIPage.setRecords(batchDTOList);
+        batchDTOIPage.setRecords(batchVOList);
         return batchDTOIPage;
     }
 }

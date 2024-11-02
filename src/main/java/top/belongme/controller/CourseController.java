@@ -3,15 +3,16 @@ package top.belongme.controller;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import top.belongme.exception.GlobalBusinessException;
 import top.belongme.beanconverter.CourseConverter;
-import top.belongme.model.dto.CourseDTO;
+import top.belongme.model.vo.CourseVO;
 import top.belongme.model.pojo.Course;
 import top.belongme.model.result.Result;
-import top.belongme.model.vo.CourseQueryVo;
+import top.belongme.model.dto.CourseQueryDTO;
 import top.belongme.service.CourseService;
 
 import javax.annotation.Resource;
@@ -28,6 +29,7 @@ import java.util.Objects;
  */
 @RestController
 @RequestMapping("course")
+@Slf4j
 //@Validated
 public class CourseController {
 
@@ -45,15 +47,15 @@ public class CourseController {
      */
     @PreAuthorize("hasAuthority('job:course:select')")
     @GetMapping("/listPage/{page}/{limit}")
-    public Result<IPage<CourseDTO>> getCourseList(@PathVariable Long page,
-                                               @PathVariable Long limit,
-                                               CourseQueryVo courseQueryVo) {
+    public Result<IPage<CourseVO>> getCourseList(@PathVariable Long page,
+                                                 @PathVariable Long limit,
+                                                 CourseQueryDTO courseQueryDTO) {
         //创建page对象
         Page<Course> pageParam = new Page<>(page, limit);
         //调用service方法
-        IPage<Course> pageModel = courseService.selectPage(pageParam, courseQueryVo);
+        IPage<Course> pageModel = courseService.selectPage(pageParam, courseQueryDTO);
 
-        IPage<CourseDTO> courseDTOIPage = courseConverter.convertPage(pageModel);
+        IPage<CourseVO> courseDTOIPage = courseConverter.convertPage(pageModel);
         return new Result<>(200, "请求成功", courseDTOIPage);
     }
 
@@ -65,10 +67,10 @@ public class CourseController {
      */
     @PreAuthorize("hasAuthority('job:course:select')")
     @GetMapping("/listOnlyEnabled")
-    public Result<List<CourseDTO>> getCourseListOnlyEnabled() {
+    public Result<List<CourseVO>> getCourseListOnlyEnabled() {
         List<Course> courseList = courseService.list(new QueryWrapper<Course>().eq("status", 1));
-        List<CourseDTO> courseDTOList = courseConverter.convertToDTOList(courseList);
-        return new Result<>(200, "请求成功", courseDTOList);
+        List<CourseVO> courseVOList = courseConverter.convertToDTOList(courseList);
+        return Result.ok(courseVOList);
     }
 
     /**
@@ -83,7 +85,7 @@ public class CourseController {
         if (result != null && result.hasErrors()) {
             throw new GlobalBusinessException(800, Objects.requireNonNull(result.getFieldError()).getDefaultMessage());
         }
-        return courseService.addCourseAndFolderPath(course);
+        return courseService.addCourse(course);
     }
 
     /**
@@ -135,9 +137,9 @@ public class CourseController {
      */
     @PreAuthorize("hasAuthority('job:course:select')")
     @GetMapping("/get/{courseId}")
-    public Result<CourseDTO> getCourseById(@PathVariable String courseId) {
+    public Result<CourseVO> getCourseById(@PathVariable String courseId) {
         Course course = courseService.getById(courseId);
-        CourseDTO courseDTO = courseConverter.convertToDTO(course);
-        return new Result(200, "请求成功", courseDTO);
+        CourseVO courseVO = courseConverter.convertToDTO(course);
+        return new Result(200, "请求成功", courseVO);
     }
 }

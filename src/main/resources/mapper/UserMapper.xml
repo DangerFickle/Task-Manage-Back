@@ -10,10 +10,10 @@
         from job_user
         where id not in (select uploader_id
         from job_task
-        where belong_batch_id = #{vo.belongBatchId})
+        where belong_batch_id = #{dto.belongBatchId})
         and id not in (1)
-        <if test="vo.studentName != null">
-            and name like CONCAT('%',#{vo.studentName},'%')
+        <if test="dto.studentName != null">
+            and name like CONCAT('%',#{dto.studentName},'%')
         </if>
     </select>
 
@@ -23,7 +23,24 @@
         from job_user
         where id not in (select uploader_id
                          from job_task
-                         where belong_batch_id = #{vo.belongBatchId})
+                         where belong_batch_id = #{dto.belongBatchId})
           and id not in (1)
+    </select>
+
+    <select id="getUserWithoutGroupMember" resultMap="userMap">
+        select t1.*
+        from job_user t1
+        <where>
+            t1.id not in (select t1.id
+                        from job_user t1
+                        join job_user_group t2
+                        on t1.id = t2.user_id
+                        join job_group t3
+                        on t2.group_id = t3.id
+                        where t3.id = #{dto.groupId}) and t1.role_id != 1
+            <if test="dto.name != null and dto.name != ''">
+                and t1.name like CONCAT('%',#{dto.name},'%')
+            </if>
+        </where>
     </select>
 </mapper>

@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import top.belongme.model.result.Result;
-import top.belongme.model.vo.TaskDetailsQueryVo;
+import top.belongme.model.dto.TaskDetailsQueryDTO;
 import top.belongme.service.ExcelService;
 
 import javax.annotation.Resource;
@@ -27,7 +27,7 @@ public class ExcelController {
 
     @PreAuthorize("hasAuthority('job:userInfo:export')")
     @GetMapping("/notCommit")
-    public Result notCommit(HttpServletResponse response, TaskDetailsQueryVo taskDetailsQueryVo) throws Exception {
-        return excelService.getNotCommitExcel(response, taskDetailsQueryVo);
+    public Result notCommit(HttpServletResponse response, TaskDetailsQueryDTO taskDetailsQueryDTO) throws Exception {
+        return excelService.getNotCommitExcel(response, taskDetailsQueryDTO);
     }
 }

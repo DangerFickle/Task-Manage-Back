@@ -1,10 +1,9 @@
 package top.belongme.service;
 
 import top.belongme.model.result.Result;
-import top.belongme.model.vo.TaskDetailsQueryVo;
+import top.belongme.model.dto.TaskDetailsQueryDTO;
 
 import javax.servlet.http.HttpServletResponse;
-import java.io.FileNotFoundException;
 
 /**
  * @Title: ExcelService
@@ -14,5 +13,5 @@ import java.io.FileNotFoundException;
  * @Date 2023/3/2617:24
  */
 public interface ExcelService {
-    Result getNotCommitExcel(HttpServletResponse response, TaskDetailsQueryVo taskDetailsQueryVo) throws Exception;
+    Result getNotCommitExcel(HttpServletResponse response, TaskDetailsQueryDTO taskDetailsQueryDTO) throws Exception;
 }

@@ -23,9 +23,8 @@ public class Batch {
     private String batchName; // 批次名称
     @NotBlank(message = "批次描述不能为空")
     private String description; // 批次描述
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private String batchType; // 批次类型 person 或 group
     private Date endTime; // 批次截至时间
-    private String folderPath; // 批次文件夹路径
     @NotBlank(message = "所属课程不能为空")
     private String belongCourseId; // 所属课程id
     @TableField(exist = false)
@@ -41,12 +40,11 @@ public class Batch {
     @TableField(exist = false)
     private Integer isCommit; // 批次是否已提交
     @TableField(exist = false)
-    private Long personCount; // 批次已交人数
+    private Long alreadyCount; // 批次已交人数
     @TableField(exist = false)
     private Long totalCount; // 总人数
     @TableField(exist = false)
     private Long sizeOfDirectory; // 批次文件夹内的文件大小
     private Date createTime;
     private Date updateTime;
-
 }

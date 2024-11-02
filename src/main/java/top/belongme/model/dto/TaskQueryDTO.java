@@ -1,4 +1,4 @@
-package top.belongme.model.vo;
+package top.belongme.model.dto;
 
 /**
  * @Title: TaskQueryVo
@@ -7,5 +7,5 @@ package top.belongme.model.vo;
  * @Author DengChao
  * @Date 2023/2/1220:09
  */
-public class TaskQueryVo {
+public class TaskQueryDTO {
 }

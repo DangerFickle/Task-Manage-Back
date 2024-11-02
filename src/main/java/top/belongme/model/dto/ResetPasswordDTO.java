@@ -1,4 +1,4 @@
-package top.belongme.model.vo;
+package top.belongme.model.dto;
 
 import lombok.Data;
 
@@ -12,7 +12,7 @@ import javax.validation.constraints.NotBlank;
  * @Date 2023/2/1415:53
  */
 @Data
-public class ResetPasswordVo {
+public class ResetPasswordDTO {
     @NotBlank(message = "旧密码不能为空")
     private String oldPassword;
     @NotBlank(message = "新密码不能为空")

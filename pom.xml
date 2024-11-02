@@ -107,6 +107,22 @@
             <version>3.2.1</version>
         </dependency>
 
+        <!--        <dependency>-->
+        <!--            <groupId>love.forte.simbot.boot</groupId>-->
+        <!--            <artifactId>simboot-core-spring-boot-starter</artifactId>-->
+        <!--            <version>3.2.0</version>-->
+        <!--        </dependency>-->
+        <!--        <dependency>-->
+        <!--            <groupId>love.forte.simbot.component</groupId>-->
+        <!--            <artifactId>simbot-component-mirai-core</artifactId>-->
+        <!--            <version>3.2.0.0</version>-->
+        <!--        </dependency>-->
+
+        <!-- aspectJ -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-aspects</artifactId>
+        </dependency>
     </dependencies>
 
     <build>
@@ -127,8 +143,8 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <configuration>
-                    <source>15</source>
-                    <target>15</target>
+                    <source>16</source>
+                    <target>16</target>
                 </configuration>
             </plugin>
         </plugins>

@@ -43,4 +43,11 @@ public class Result<T> {
     public static <R> Result<R> ok(R data) {
         return new Result<>(200, "操作成功", data);
     }
+
+    public static <R> Result<R> ok() {
+        return new Result<>(200, "操作成功");
+    }
+    public static <R> Result<R> ok(String msg) {
+        return new Result<>(200, msg);
+    }
 }

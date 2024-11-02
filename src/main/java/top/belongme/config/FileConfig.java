@@ -24,8 +24,8 @@ public class FileConfig {
     @Value("${job-manage-settings.work-folder-name}")
     String workFolderName;
 
-    @Bean("filePathBySystem")
-    public String getFilePathBySystem() {
+    @Bean()
+    public String filePathBySystem() {
         // 初始化不同系统对应的文件路径 filePathBySystem， 要debug运行项目才能获取到
         String path = System.getProperty("java.class.path");
         int firstIndex = path.lastIndexOf(System.getProperty("path.separator")) + 1;
@@ -43,6 +43,22 @@ public class FileConfig {
         } catch (UnsupportedEncodingException e) {
             throw new RuntimeException("初始化不同系统对应的文件路径失败");
         }
+    }
+
+    /**
+     * TODO 获取所有文件上传的保存路径
+     *
+     * @Author DengChao
+     * @Date 2023/10/29 14:01
+     */
+    @Bean
+    public String fileSaveLocation() {
+        String path = filePathBySystem() + "upload_files" + File.separator;
+        File file = new File(path);
+        if (!file.exists()) {
+            file.mkdirs();
+        }
+        return path;
     }
 
     @Bean

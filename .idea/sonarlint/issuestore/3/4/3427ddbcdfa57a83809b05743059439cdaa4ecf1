@@ -1,0 +1,32 @@
+
+L
+java:S3740ˆ"/Provide the parametrized type for this generic.(ì±ÊA8È€Îà¬2
+R
+java:S3740¦"/Provide the parametrized type for this generic.(¾÷™ëıÿÿÿÿ8É€Îà¬2
+M
+java:S3740Ä"/Provide the parametrized type for this generic.(½‚İ˜8É€Îà¬2
+M
+java:S3740ö"/Provide the parametrized type for this generic.(¨½¤8É€Îà¬2
+s
+java:S1192·"PDefine a constant instead of duplicating this literal "belong_batch_id" 3 times.(ºŞ£şÿÿÿÿ8Ê€Îà¬2
+n	java:S1167"RRename this field "GMTDate" to match the regular expression '^[a-z][a-zA-Z0-9]*$'.(÷¯÷­8»Îà¬2
+_
+java:S6813:"BRemove this field injection and use constructor injection instead.(êæÄŞ8»Îà¬2
+O
+java:S1135!"2Complete the task associated to this TODO comment.(Üğ£Å8½Îà¬2
+O
+java:S1135?"2Complete the task associated to this TODO comment.(èŸÛ8¾Îà¬2
+O
+java:S1135f"2Complete the task associated to this TODO comment.(ğ…øı8ÁÎà¬2
+P
+java:S1135"2Complete the task associated to this TODO comment.(¶øä8ÄÎà¬2
+U
+java:S1135ı"2Complete the task associated to this TODO comment.(ã¬…éşÿÿÿÿ8ÎÎà¬2
+^	java:S125´"<This block of commented-out lines of code should be removed.(É©©„úÿÿÿÿ8ÑÎà¬2
+^	java:S125¸"<This block of commented-out lines of code should be removed.(ŞĞ°šÿÿÿÿÿ8ÑÎà¬2
+U
+java:S1135Í"2Complete the task associated to this TODO comment.(ñÛéÅşÿÿÿÿ8ÑÎà¬2
+\
+java:S1155÷">Use isEmpty() to check whether the collection is empty or not.(’í¸8ÖÎà¬2
+U
+java:S10689"3Remove this unused "oldBelongCourse" private field.(ÜÁÊûûÿÿÿÿ8×Îà¬2

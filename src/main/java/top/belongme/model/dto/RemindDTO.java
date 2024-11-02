@@ -1,4 +1,4 @@
-package top.belongme.model.vo;
+package top.belongme.model.dto;
 
 import lombok.Data;
 
@@ -12,7 +12,7 @@ import javax.validation.constraints.NotBlank;
  * @Date 2023/2/2016:37
  */
 @Data
-public class RemindVo {
+public class RemindDTO {
     @NotBlank(message = "用户id不能为空")
     private String userId;
 

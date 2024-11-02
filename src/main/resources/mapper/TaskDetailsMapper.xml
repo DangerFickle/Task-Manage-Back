@@ -3,19 +3,45 @@
         PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
         "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="top.belongme.mapper.TaskDetailsMapper">
-    <select id="selectPage" resultType="top.belongme.model.pojo.task.TaskDetails">
-        select jt.id as task_id, jt.file_path, ju.name as student_name, ju.student_number, jc.course_name as belong_course_name,
-        jb.batch_name as belong_batch_name, jt.create_time, jb.end_time as belong_batch_end_time
+    <select id="selectPage" resultType="top.belongme.model.pojo.task.PersonalTaskDetail">
+        select jt.id as task_id, ju.name as student_name, ju.student_number, jc.course_name as belong_course_name,
+        jb.batch_name as belong_batch_name, jt.create_time, jb.end_time as belong_batch_end_time, jt.file_type as
+        file_type,
+        jt.file_sha256 as file_sha256
         from job_task jt
         join job_user ju
         on jt.uploader_id = ju.id
         join job_batch jb on jt.belong_batch_id = jb.id
         join job_course jc on jb.belong_course_id = jc.id
         <where>
-            <if test="vo.studentName != null">
-                and ju.name like CONCAT('%',#{vo.studentName},'%')
+            <if test="dto.studentName != null">
+                and ju.name like CONCAT('%',#{dto.studentName},'%')
             </if>
-            and jt.belong_batch_id = #{vo.belongBatchId}
+            and jt.belong_batch_id = #{dto.belongBatchId}
         </where>
     </select>
+
+
+    <select id="selectGroupPage" resultType="top.belongme.model.pojo.task.GroupTaskDetail">
+        select t1.id as task_id,
+        t2.name as group_name,
+        t4.course_name as belong_course_name,
+        t3.batch_name as belong_batch_name,
+        t1.file_type,
+        t1.file_sha256,
+        t3.end_time as belong_batch_end_time,
+        t1.create_time
+        from job_task t1 join job_group t2
+        on t1.uploader_id = t2.id
+        join job_batch t3 on t1.belong_batch_id = t3.id
+        join job_course t4 on t3.belong_course_id = t4.id
+        <where>
+            <if test="dto.groupName != null">
+                and t2.name like CONCAT('%',#{dto.groupName},'%')
+            </if>
+            and belong_batch_id = #{dto.belongBatchId}
+        </where>
+    </select>
+
+
 </mapper>

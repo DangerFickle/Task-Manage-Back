@@ -7,6 +7,7 @@ import top.belongme.model.result.Result;
 
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.Map;
 
 
 /**
@@ -17,8 +18,10 @@ import java.io.IOException;
  * @Date 2023/2/1018:17
  */
 public interface TaskService extends IService<Task> {
+    // 检查上传的文件是否已经存在
+    Result checkFileExist(String fileSha256, String fileType);
     // 提交作业
-    Result commitTask(MultipartFile uploadTaskFile, String belongBatchId);
+    Result commitTask(MultipartFile uploadTaskFile, String belongBatchId, String fileSha256, String taskType);
 
     // 取消提交作业
     Result cancelCommitTask(String taskIid);
@@ -28,4 +31,7 @@ public interface TaskService extends IService<Task> {
     void getTaskFileByBelongBatchId(String belongBatchId, HttpServletResponse response) throws IOException;
 
     void getBatchFile(String batchId, HttpServletResponse response) throws IOException;
+
+    Result secondTransmit(String belongBatchId, String fileSha256, String fileType);
+
 }

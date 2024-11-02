@@ -2,7 +2,7 @@ package top.belongme.service;
 
 import top.belongme.model.pojo.Email;
 import top.belongme.model.result.Result;
-import top.belongme.model.vo.RemindVo;
+import top.belongme.model.dto.RemindDTO;
 
 public interface SendMailService {
 
@@ -29,5 +29,5 @@ public interface SendMailService {
      * @Author DengChao
      * @Date 2023/2/20 16:37
      */
-    Result remindUser(RemindVo remindVo);
+    Result remindUser(RemindDTO remindDTO);
 }

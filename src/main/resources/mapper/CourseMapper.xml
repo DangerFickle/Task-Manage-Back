@@ -14,25 +14,28 @@
         <result column="is_deleted" property="isDeleted"/>
         <result column="creator_name" property="creatorName"/>
         <result column="modifier_name" property="modifierName"/>
+        <result column="group_max_member_size" property="groupMaxMemberSize"/>
+        <result column="group_max_size" property="groupMaxSize"/>
     </resultMap>
     <select id="selectPage" resultMap="userMap">
         select t1.id, t1.course_name, t1.description, t1.status, t1.creator_id, t1.create_time, t1.update_time,
-        t1.is_deleted, t1.modifier_id, t2.name as creator_name, t3.name as modifier_name
+        t1.is_deleted, t1.modifier_id, t2.name as creator_name, t3.name as modifier_name, t1.group_max_member_size,
+        t1.group_max_size
         from job_course t1
         join job_user t2 on t1.creator_id = t2.id
         join job_user t3 on t1.modifier_id = t3.id
         <where>
-            <if test="vo.courseName != null">
-                and course_name like CONCAT('%',#{vo.courseName},'%')
+            <if test="dto.courseName != null">
+                and course_name like CONCAT('%',#{dto.courseName},'%')
             </if>
-            <if test="vo.description != null">
-                and description like CONCAT('%',#{vo.description},'%')
+            <if test="dto.description != null">
+                and description like CONCAT('%',#{dto.description},'%')
             </if>
-            <if test="vo.creatorName != null">
-                and t2.name like CONCAT('%',#{vo.creatorName},'%')
+            <if test="dto.creatorName != null">
+                and t2.name like CONCAT('%',#{dto.creatorName},'%')
             </if>
-            <if test="vo.modifierName != null">
-                and t3.name like CONCAT('%',#{vo.modifierName},'%')
+            <if test="dto.modifierName != null">
+                and t3.name like CONCAT('%',#{dto.modifierName},'%')
             </if>
             and t1.is_deleted = 0
         </where>

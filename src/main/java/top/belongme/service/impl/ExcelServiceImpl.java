@@ -11,9 +11,8 @@ import top.belongme.mapper.UserMapper;
 import top.belongme.model.excel.UserExcel;
 import top.belongme.model.pojo.Batch;
 import top.belongme.model.pojo.Course;
-import top.belongme.model.pojo.user.User;
 import top.belongme.model.result.Result;
-import top.belongme.model.vo.TaskDetailsQueryVo;
+import top.belongme.model.dto.TaskDetailsQueryDTO;
 import top.belongme.service.ExcelService;
 
 import javax.annotation.Resource;
@@ -49,10 +48,10 @@ public class ExcelServiceImpl implements ExcelService {
 
 
     @Override
-    public Result getNotCommitExcel(HttpServletResponse response, TaskDetailsQueryVo taskDetailsQueryVo) throws Exception {
-        Batch batch = batchMapper.selectById(taskDetailsQueryVo.getBelongBatchId());
+    public Result getNotCommitExcel(HttpServletResponse response, TaskDetailsQueryDTO taskDetailsQueryDTO) throws Exception {
+        Batch batch = batchMapper.selectById(taskDetailsQueryDTO.getBelongBatchId());
         if (Objects.nonNull(batch)) {
-            List<UserExcel> notCommitUserList = userMapper.getNotCommitUserListExcel(taskDetailsQueryVo);
+            List<UserExcel> notCommitUserList = userMapper.getNotCommitUserListExcel(taskDetailsQueryDTO);
             // 获取批次所属课程
             Course course = courseMapper.selectById(batch.getBelongCourseId());
 

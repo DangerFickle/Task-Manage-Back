@@ -9,4 +9,20 @@
     <select id="selectPage" resultMap="taskMap">
 
     </select>
+
+    <select id="getPersonalTaskUploaders" resultType="top.belongme.model.pojo.user.User">
+        select t2.id, t2.name, t2.student_number
+        from job_task t1
+                 join job_user t2
+                      on t1.uploader_id = t2.id
+        where t1.belong_batch_id = #{belongBatchId}
+    </select>
+
+    <select id="getGroupTaskUploaders" resultType="top.belongme.model.pojo.Group">
+        select t2.id, t2.name
+        from job_task t1
+                 join job_group t2
+                      on t1.uploader_id = t2.id
+        where t1.belong_batch_id = #{belongBatchId}
+    </select>
 </mapper>

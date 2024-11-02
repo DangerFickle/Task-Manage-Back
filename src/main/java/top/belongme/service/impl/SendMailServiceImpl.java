@@ -19,7 +19,7 @@ import top.belongme.model.pojo.Course;
 import top.belongme.model.pojo.Email;
 import top.belongme.model.pojo.user.User;
 import top.belongme.model.result.Result;
-import top.belongme.model.vo.RemindVo;
+import top.belongme.model.dto.RemindDTO;
 import top.belongme.service.SendMailService;
 
 import javax.annotation.Resource;
@@ -28,10 +28,6 @@ import javax.mail.internet.MimeMessage;
 import java.io.File;
 import java.util.Date;
 import java.util.Objects;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 @Slf4j
@@ -125,9 +121,9 @@ public class SendMailServiceImpl implements SendMailService {
     }
 
     @Override
-    public Result remindUser(RemindVo remindVo) {
+    public Result remindUser(RemindDTO remindDTO) {
         // 查询批次信息
-        Batch batch = batchMapper.selectById(remindVo.getBatchId());
+        Batch batch = batchMapper.selectById(remindDTO.getBatchId());
         if (Objects.isNull(batch)) {
             log.error("邮件提醒失败，因为批次不存在");
             throw new GlobalBusinessException(800, "批次不存在");
@@ -146,7 +142,7 @@ public class SendMailServiceImpl implements SendMailService {
             }
         }
         // 查询用户信息
-        User user = userMapper.selectById(remindVo.getUserId());
+        User user = userMapper.selectById(remindDTO.getUserId());
         if (Objects.nonNull(user)) {
             // 判断用户是否绑定过邮箱
             if (Objects.isNull(user.getEmail())) {

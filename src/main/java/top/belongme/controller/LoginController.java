@@ -15,17 +15,18 @@ import javax.annotation.Resource;
  * @Date 2023/2/713:48
  */
 @RestController
+@RequestMapping("user")
 public class LoginController {
 
     @Resource
     private LoginService loginService;
 
-    @PostMapping("/user/login")
+    @PostMapping("login")
     public Result login(@RequestBody User user){
         return loginService.login(user);
     }
 
-    @GetMapping("/user/logout")
+    @GetMapping("logout")
     public Result logout(){
         return loginService.logout();
     }

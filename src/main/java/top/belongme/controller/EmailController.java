@@ -4,7 +4,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import top.belongme.model.result.Result;
-import top.belongme.model.vo.RemindVo;
+import top.belongme.model.dto.RemindDTO;
 import top.belongme.service.SendMailService;
 
 import javax.annotation.Resource;
@@ -24,7 +24,7 @@ public class EmailController {
     private SendMailService sendMailService;
 
     @GetMapping("/remind")
-    public Result remindUser(RemindVo remindVo) {
-        return sendMailService.remindUser(remindVo);
+    public Result remindUser(RemindDTO remindDTO) {
+        return sendMailService.remindUser(remindDTO);
     }
 }

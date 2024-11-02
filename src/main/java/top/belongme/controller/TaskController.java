@@ -26,6 +26,36 @@ public class TaskController {
     @Resource
     private TaskService taskService;
 
+
+
+    /**
+     * TODO 秒传文件
+     *
+     * @Author DengChao
+     * @Date 2023/10/29 15:17
+     */
+    @PreAuthorize("hasAuthority('job:task:insert')")
+    @PostMapping(value = "/secondTransmit")
+    public Result secondTransmit(@RequestParam String belongBatchId,
+                                 @RequestParam String fileSha256,
+                                 @RequestParam String fileType) {
+        return taskService.secondTransmit(belongBatchId, fileSha256, fileType);
+    }
+
+    /**
+     * TODO 检查要上传的文件是否已经存在
+     *
+     * @Author DengChao
+     * @Date 2023/10/29 15:17
+     */
+    @PreAuthorize("hasAuthority('job:task:select')")
+    @GetMapping(value = "/checkFileExist")
+    public Result checkFileExist(String fileSha256,
+                                 String fileType) {
+        return taskService.checkFileExist(fileSha256, fileType);
+    }
+
+
     /**
      * TODO 提交作业
      *
@@ -34,8 +64,12 @@ public class TaskController {
      */
     @PreAuthorize("hasAuthority('job:task:insert')")
     @PostMapping(value = "/commitTask")
-    public Result commitTask(@RequestParam("taskFile") MultipartFile uploadTaskFile, @RequestParam("belongBatchId") String belongBatchId) {
-        return taskService.commitTask(uploadTaskFile, belongBatchId);
+    public Result commitTask(@RequestParam MultipartFile taskFile,
+                             @RequestParam String belongBatchId,
+                             @RequestParam String fileSha256,
+                             @RequestParam String taskType) {
+        System.out.println();
+        return taskService.commitTask(taskFile, belongBatchId, fileSha256, taskType);
     }
 
 

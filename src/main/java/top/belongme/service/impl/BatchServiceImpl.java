@@ -1,36 +1,31 @@
 package top.belongme.service.impl;
 
+import com.alibaba.fastjson.JSON;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.io.FileUtils;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import top.belongme.constant.Constants;
 import top.belongme.exception.GlobalBusinessException;
-import top.belongme.mapper.BatchMapper;
-import top.belongme.mapper.CourseMapper;
-import top.belongme.mapper.TaskMapper;
-import top.belongme.mapper.UserMapper;
+import top.belongme.mapper.*;
+import top.belongme.model.dto.BatchQueryDTO;
 import top.belongme.model.pojo.Batch;
 import top.belongme.model.pojo.Course;
+import top.belongme.model.pojo.Group;
 import top.belongme.model.pojo.task.Task;
 import top.belongme.model.pojo.user.LoginUser;
 import top.belongme.model.pojo.user.User;
 import top.belongme.model.result.Result;
-import top.belongme.model.vo.BatchQueryVo;
 import top.belongme.service.BatchService;
 import top.belongme.utils.LoginUserUtil;
 
 import javax.annotation.Resource;
 import java.io.File;
-import java.io.IOException;
-import java.util.Date;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 /**
  * @Title: BatchServiceImpl
@@ -54,59 +49,15 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
     private UserMapper userMapper;
 
     @Resource
-    private String filePathBySystem;
-
+    private String fileSaveLocation;
 
     @Resource
     private Date GMTDate;
 
+    private Course oldBelongCourse;
+    @Autowired
+    private GroupMapper groupMapper;
 
-    /**
-     * TODO 添加批次并创建同名文件夹
-     *
-     * @Author DengChao
-     * @Date 2023/2/9 16:11
-     */
-    @Override
-    public Result addBatchAndFolderPath(Batch batch) {
-        Batch oldBatch = baseMapper.selectOne(new QueryWrapper<Batch>().eq("batch_name", batch.getBatchName()).eq("belong_course_id", batch.getBelongCourseId()));
-        if (Objects.nonNull(oldBatch)) {
-            log.error("批次创建失败，因为即将添加的批次已经存在");
-            throw new GlobalBusinessException(800, "批次已存在");
-        }
-
-        // 获取所属课程
-        Course course = courseMapper.selectById(batch.getBelongCourseId());
-        if (Objects.isNull(course)) {
-            log.error("批次创建失败，因为批次所属的课程不存在");
-            throw new GlobalBusinessException(800, "课程不存在");
-        }
-
-        // 创建批次文件夹
-        String batchFolderName = course.getFolderPath() + File.separator + batch.getBatchName();
-        File batchFolder = new File(batchFolderName);
-        boolean mkdirs = batchFolder.mkdirs();
-        if (!mkdirs) {
-            log.error("批次创建失败，因为批次对应的文件夹创建失败");
-            throw new GlobalBusinessException(800, "批次文件夹创建失败");
-        }
-        batch.setFolderPath(batchFolderName);
-        // 获取当前登录用户
-        LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
-        // 设置创建者id
-        batch.setCreatorId(loginUser.getUser().getId());
-        // 设置修改者id
-        batch.setModifierId(loginUser.getUser().getId());
-        int insert = baseMapper.insert(batch);
-        if (insert > 0) {
-            // 打印日志
-            log.info("管理员【{}】，在【{}】课程下创建了一个批次：【{}】", loginUser.getUser().getName(), course.getCourseName(), batch.getBatchName());
-            return new Result(200, "批次添加成功");
-        } else {
-            log.error("批次创建失败，因为向数据库中插入记录失败");
-            throw new GlobalBusinessException(800, "批次添加失败");
-        }
-    }
 
     /**
      * TODO 分页查询批次
@@ -115,8 +66,9 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
      * @Date 2023/2/9 22:47
      */
     @Override
-    public IPage<Batch> selectPage(Page<Batch> pageParam, BatchQueryVo batchQueryVo) {
-        Course course = courseMapper.selectById(batchQueryVo.getBelongCourseId());
+    public IPage<Batch> selectPage(Page<Batch> pageParam, BatchQueryDTO batchQueryDTO) {
+        Course course = courseMapper.selectById(batchQueryDTO.getBelongCourseId());
+
         if (Objects.isNull(course)) {
             log.info("查询失败，因为传入的所属课程不存在");
             throw new GlobalBusinessException(800, "该课程不存在");
@@ -127,7 +79,7 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
             throw new GlobalBusinessException(800, "该课程已被禁用");
         }
 
-        IPage<Batch> batchIPage = baseMapper.selectPage(pageParam, batchQueryVo);
+        IPage<Batch> batchIPage = baseMapper.selectPage(pageParam, batchQueryDTO);
         batchIPage.getRecords().forEach(batch -> {
             // 判断批次的截止时间是否是格林威治时间，是则设置为未截止，否则设置为已截止
             if (GMTDate.equals(batch.getEndTime())) {
@@ -147,192 +99,101 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
     }
 
     /**
-     * TODO 修改批次文件夹名称，修改批次所属课程（需要移动文件夹）
+     * TODO 添加批次
+     *
+     * @Author DengChao
+     * @Date 2023/2/9 16:11
+     */
+    @Override
+    public Result addBatch(Batch batch) {
+        QueryWrapper<Batch> qw = new QueryWrapper<Batch>()
+                .eq("batch_name", batch.getBatchName())
+                .eq("belong_course_id", batch.getBelongCourseId())
+                .eq("batch_type", batch.getBatchType());
+        Batch oldBatch = this.getOne(qw);
+        if (Objects.nonNull(oldBatch)) {
+            log.error("批次创建失败，因为即将添加的批次已经存在");
+            throw new GlobalBusinessException(800, "批次已存在");
+        }
+
+        // 获取所属课程
+        Course course = courseMapper.selectById(batch.getBelongCourseId());
+        if (Objects.isNull(course)) {
+            log.error("批次创建失败，因为批次所属的课程不存在");
+            throw new GlobalBusinessException(800, "课程不存在");
+        }
+
+        // 获取当前登录用户
+        LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
+        // 设置创建者id
+        batch.setCreatorId(loginUser.getUser().getId());
+        // 设置修改者id
+        batch.setModifierId(loginUser.getUser().getId());
+        int insert = baseMapper.insert(batch);
+        if (insert > 0) {
+            // 打印日志
+            log.info("管理员【{}】，在【{}】课程下创建了一个批次：【{}】", loginUser.getUser().getName(), course.getCourseName(), batch.getBatchName());
+            return new Result(200, "批次添加成功");
+        } else {
+            log.error("批次创建失败，因为向数据库中插入记录失败");
+            throw new GlobalBusinessException(800, "批次添加失败");
+        }
+    }
+
+    /**
+     * TODO 修改批次文件夹名称，修改批次所属课程
      *
      * @Author DengChao
      * @Date 2023/2/9 21:55
      */
     @Override
-    public Result updateBatchAndFolderPath(Batch batch) {
+    public Result updateBatch(Batch batch) {
         // 获取原批次信息，判断批次是否存在
         Batch oldBatch = baseMapper.selectById(batch.getId());
         if (Objects.isNull(oldBatch)) {
-            log.error("更新批次失败，因为即将更新的批次不存在");
+            log.error("更新批次失败，批次不存在");
             throw new GlobalBusinessException(800, "批次不存在");
         }
 
-        // 标志批次最终是否需要被修改
-        boolean isModify = false;
+        Course course = courseMapper.selectById(oldBatch.getBelongCourseId());
 
-        // 获取旧批次的所属课程，因为修改批次名或所属课程名时都要使用，所以提前获取，以免修改课程时二次获取
-        Course oldBelongCourse = courseMapper.selectById(oldBatch.getBelongCourseId());
+        // 获取当前登录用户
+        LoginUser user = LoginUserUtil.getCurrentLoginUser();
 
-        // 批次名称要需改的情况，文件系统中
-        if (!Objects.equals(batch.getBatchName(), oldBatch.getBatchName())) {
-            // 拼接新批次文件夹路径，旧课程的路径 + 新批次名称
-            String newBatchFolderPath = oldBelongCourse.getFolderPath() + File.separator + batch.getBatchName();
-            // 构建要修改文件夹路径的新批次对象
-            Batch batchUpdateFolderPath = new Batch();
-            // 设置批次id
-            batchUpdateFolderPath.setId(batch.getId());
-            // 设置批次新名称
-//            batchUpdateFolderPath.setBatchName(batch.getBatchName());
-            // 设置批次新文件夹路径
-            batchUpdateFolderPath.setFolderPath(newBatchFolderPath);
-            // 设置批次修改人id为当前登录的用户id
-//            batchUpdateFolderPath.setModifierId(loginUser.getUser().getId());
-            // 更新数据库中的批次信息
-            int update = baseMapper.updateById(batchUpdateFolderPath);
-            // 如果更新成功则重命名文件系统中的文件夹名称
-            if (update > 0) {
-                // 获取旧批次文件夹路径
-                String oldBatchFolderPath = oldBatch.getFolderPath();
-                // 构建旧批次文件夹
-                File oldBatchFolder = new File(oldBatchFolderPath);
-                // 构建新批次文件夹
-                File newBatchFolder = new File(newBatchFolderPath);
-
-                // 修改文件夹名称
-                boolean renameTo = oldBatchFolder.renameTo(newBatchFolder);
-                if (!renameTo) {
-                    log.error("更新批次失败，因为即将更新的批次文件夹重命名失败");
-                    throw new GlobalBusinessException(800, "批次文件夹重命名失败");
-                }
-                /*
-                  如果批次名称修改了
-                  则将新批次文件夹路径赋值给方法第一行获取到的旧批次对象
-                  以供下方修改所属课程时使用
-                 */
-                oldBatch.setFolderPath(newBatchFolderPath);
-                isModify = true;
-            } else {
-                log.error("更新批次失败，因为向数据库中更新数据失败");
-                throw new GlobalBusinessException(800, "批次修改失败");
-            }
+        boolean update = this.updateById(batch);
+        if (update) {
+            log.info("管理员【{}】，修改了【{}】课程下的【{}】批次，原信息：{}，新信息：{}", user.getUser().getName(), course.getCourseName(), oldBatch.getBatchName(), JSON.toJSON(oldBatch), JSON.toJSON(batch));
+            return new Result(200, "批次修改成功");
         } else {
-            batch.setBatchName(null);
-        }
-
-        // 修改批次所属课程
-        if (batch.getBelongCourseId() != null && !batch.getBelongCourseId().equals(oldBatch.getBelongCourseId())) {
-            // 获取新的所属课程
-            Course newBelongCourse = courseMapper.selectById(batch.getBelongCourseId());
-            // 构建新所属课程的文件夹对象
-            File newBelongCourseFolder = new File(newBelongCourse.getFolderPath());
-            // 这里要获取旧的所属课程，上面提前获取过了，这里直接使用
-            // 获取最批次即将要移动到的目的地文件夹路径
-            String destBatchFolderPath = oldBatch.getFolderPath().replace(oldBelongCourse.getCourseName(), newBelongCourse.getCourseName());
-            // 构建最终要存入数据库的批次对象，因为是修改所属课程，所以不需要设置课程名称
-            Batch batchUpdateBelongCourse = new Batch();
-            batchUpdateBelongCourse.setId(batch.getId());
-//            batchUpdateBelongCourse.setBelongCourseId(batch.getBelongCourseId());
-            batchUpdateBelongCourse.setFolderPath(destBatchFolderPath);
-//            batchUpdateBelongCourse.setModifierId(loginUser.getUser().getId());
-            // 更新批次信息
-            int update = baseMapper.updateById(batchUpdateBelongCourse);
-            // 如果批次的信息更新成功，则修改该批次下的所有作业的文件路径，将路径中旧所属课程名称替换为新所属课程名称
-            if (update > 0) {
-                // 获取该批次下的所有作业
-                List<Task> taskList = taskMapper.selectList(new QueryWrapper<Task>().eq("belong_batch_id", batch.getId()));
-                // 遍历作业，修改作业路径
-                taskList.forEach(task -> {
-                    task.setFilePath(batchUpdateBelongCourse.getFolderPath() + File.separator + task.getFileName());
-                    int updateTask = taskMapper.updateById(task);
-                    if (updateTask <= 0) {
-                        log.error("更新批次失败，因为向数据库中更新批次下的作业失败");
-                        throw new GlobalBusinessException(800, "批次下的作业修改失败");
-                    }
-                });
-            } else {
-                log.error("更新批次失败，因为向数据库中更新批次失败");
-                throw new GlobalBusinessException(800, "批次修改失败");
-            }
-            // 构建原批次文件夹路径，要移动到新新所属课程的文件夹下
-            File oldBatchFolder = new File(oldBatch.getFolderPath());
-            try {
-                // 将原批次文件夹移动到新所属课程的文件夹下
-                FileUtils.moveDirectoryToDirectory(oldBatchFolder, newBelongCourseFolder, true);
-                // 如果所属课程修改成功，设置修改标志为true
-                isModify = true;
-            } catch (IOException e) {
-                log.error("更新批次失败，因为批次文件夹移动失败");
-                throw new RuntimeException(e);
-            }
-        } else {
-            // 如果所属课程未修改，则将所属课程id设置为null，不修改
-            batch.setBelongCourseId(null);
-        }
-
-
-        // 如果新描述与旧描述相同，则设置新描述为null，不修改
-        if (!oldBatch.getDescription().equals(batch.getDescription())) {
-            isModify = true;
-        }
-
-        // 如果新截止时间为null，代表前端未传入，则设置为格林威治时间
-        if (Objects.isNull(batch.getEndTime())) {
-            batch.setEndTime(GMTDate);
-            isModify = true;
-        } else {
-            // 如果新截止时间与旧截止时间不同，则设置标志为true，相同则不修改
-            if (!oldBatch.getEndTime().equals(batch.getEndTime())) {
-                isModify = true;
-            }
-        }
-
-        if (isModify) {
-            // 获取当前登录用户
-            LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
-            // 设置修改者id
-            batch.setModifierId(loginUser.getUser().getId());
-            int update = baseMapper.updateById(batch);
-            if (update > 0) {
-                log.info("管理员【{}】，修改了【{}】课程下的【{}】批次", loginUser.getUser().getName(), oldBelongCourse.getCourseName(), oldBatch.getBatchName());
-                return new Result(200, "批次修改成功");
-            } else {
-                log.error("更新批次失败，因为向数据库中更新批次失败");
-                throw new GlobalBusinessException(800, "批次修改失败");
-            }
-        } else {
-            log.warn("更新批次失败，因为传入的批次数据与原数据无差异");
-            throw new GlobalBusinessException(800, "批次信息未发生变化");
+            log.error("更新批次失败，因为向数据库中更新批次失败");
+            throw new GlobalBusinessException(800, "批次修改失败");
         }
 
     }
 
     @Override
-    public Result deleteBatchAndFolderPath(String batchId) {
+    public Result deleteBatch(String batchId) {
         // 获取批次信息
-        Batch batch = baseMapper.selectById(batchId);
+        Batch batch = this.getById(batchId);
         if (Objects.isNull(batch)) {
             log.error("批次删除失败，因为传入的批次不存在");
             throw new GlobalBusinessException(800, "该批次不存在");
         }
         // 获取该批次下的作业，如果存在未删除的作业，则无法删除该批次
-        List<Task> taskList = taskMapper.selectList(new QueryWrapper<Task>().eq("belong_batch_id", batch.getId()));
-        if (!taskList.isEmpty()) {
+        Long taskCount = taskMapper.selectCount(new QueryWrapper<Task>().eq("belong_batch_id", batch.getId()));
+        if (taskCount > 0) {
             log.error("批次删除失败，因为该批次下存在未删除的作业");
-            throw new GlobalBusinessException(800, "该批次下存在未删除的作业，无法删除");
+            throw new GlobalBusinessException(800, "该批次下存在未删除的作业");
         }
 
-        int delete = baseMapper.deleteById(batchId);
-        if (delete > 0) {
-            String batchFolderPath = batch.getFolderPath();
-            // 要删除的批次文件夹
-            File batchFolder = new File(batchFolderPath);
-            // 如果批次文件夹存在，则删除
-            try {
-                FileUtils.deleteDirectory(batchFolder);
-                // 获取当前登陆的用户
-                LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
-                // 获取批次的所属课程
-                Course course = courseMapper.selectById(batch.getBelongCourseId());
-                log.info("管理员【{}】，删除了【{}】课程下的【{}】批次", loginUser.getUser().getName(), course.getCourseName(), batch.getBatchName());
-                return new Result(200, "批次删除成功");
-            } catch (IOException e) {
-                log.error("批次删除失败，因为该批次对应的文件夹删除失败");
-                throw new RuntimeException(e);
-            }
+        boolean delete = this.removeById(batchId);
+        if (delete) {
+            // 获取当前登陆的用户
+            LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
+            // 获取批次的所属课程
+            Course course = courseMapper.selectById(batch.getBelongCourseId());
+            log.info("管理员【{}】，删除了【{}】课程下的【{}】批次", loginUser.getUser().getName(), course.getCourseName(), batch.getBatchName());
+            return new Result(200, "批次删除成功");
         } else {
             log.error("批次删除失败，因为数据库中的批次记录删除失败");
             throw new GlobalBusinessException(800, "批次删除失败");
@@ -342,7 +203,7 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
 
     @Override
     public Result updateStatus(String batchId, Integer status) {
-        Batch oldBatch = baseMapper.selectById(batchId);
+        Batch oldBatch = this.getById(batchId);
         if (Objects.isNull(oldBatch)) {
             throw new GlobalBusinessException(800, "该批次不存在");
         }
@@ -366,9 +227,9 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
         Batch batch = new Batch();
         batch.setId(batchId);
         // 如果要切换成截止状态，则设置截止时间为当前时间
-        if (status == 1) {
+        if (Objects.equals(status, Constants.YES)) {
             batch.setEndTime(new Date());
-        } else if (status == 0) {
+        } else if (Objects.equals(status, Constants.NO)) {
             // 如果要切换成未截止状态，则设置截止时间为格林威治时间
             batch.setEndTime(GMTDate);
         }
@@ -377,11 +238,10 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
         LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
         // 设置修改者id
         batch.setModifierId(loginUser.getUser().getId());
-        int update = baseMapper.updateById(batch);
-        if (update > 0) {
+        boolean update = this.updateById(batch);
+        if (update) {
             // 获取批次所属课程
             Course course = courseMapper.selectById(oldBatch.getBelongCourseId());
-
             log.info("管理员【{}】，更改了【{}】课程下【{}】批次的状态为【{}】", loginUser.getUser().getName(), course.getCourseName(), oldBatch.getBatchName(), status == 1 ? "已截止" : "未截止");
             return new Result(200, "批次状态更新成功");
         } else {
@@ -389,32 +249,41 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
         }
     }
 
+    /**
+     * TODO 用户提交作业时，查询各个批次的提交状态和截止状态
+     *
+     * @Author DengChao
+     * @Date 2023/10/29 14:34
+     */
     @Override
-    public IPage<Batch> selectPageIsCommit(Page<Batch> pageParam, BatchQueryVo batchQueryVo) {
-        Course belongCourse = courseMapper.selectById(batchQueryVo.getBelongCourseId());
+    public IPage<Batch> selectPageIsCommit(Page<Batch> pageParam, BatchQueryDTO batchQueryDTO) {
+        Course belongCourse = courseMapper.selectById(batchQueryDTO.getBelongCourseId());
         if (Objects.isNull(belongCourse)) {
-            log.error("查询是否可提交失败，因为传入的课程不存在");
+            log.error("查询是否已提交时失败，因为传入的课程不存在");
             throw new GlobalBusinessException(800, "该课程不存在");
         }
         if (Objects.equals(belongCourse.getStatus(), Constants.NO)) {
-            log.error("查询是否可提交失败，因为传入的课程已被禁用");
+            log.error("查询是否已提交时失败，因为传入的课程已被禁用");
             throw new GlobalBusinessException(800, "该课程已被禁用");
         }
 
-        IPage<Batch> batchIPage = this.selectPage(pageParam, batchQueryVo);
-        List<Batch> records = batchIPage.getRecords();
-        // 获取当前登陆的用户
-        LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
-        records.forEach(batch -> {
-            // 根据所属批次id和当前登陆用户id查询任务表
+        IPage<Batch> batchIPage = this.selectPage(pageParam, batchQueryDTO);
+
+        String uploaderId = LoginUserUtil.getCurrentLoginUserId();
+        if ("group".equals(batchQueryDTO.getBatchType())) {
+            uploaderId = groupMapper.getGroupId(belongCourse.getId(), uploaderId);
+        }
+
+        for (Batch batch : batchIPage.getRecords()) {
+            // 根据所属批次id和当前登陆用户id查询作业表
             QueryWrapper<Task> taskQueryWrapper = new QueryWrapper<>();
             // 设置作业所属批次id
             taskQueryWrapper.eq("belong_batch_id", batch.getId());
             // 设置作业的上传者id
-            taskQueryWrapper.eq("uploader_id", loginUser.getUser().getId());
+            taskQueryWrapper.eq("uploader_id", uploaderId);
             // 如果在作业表中能查到记录，则说明该批次已提交
-            Task task = taskMapper.selectOne(taskQueryWrapper);
-            if (Objects.nonNull(task)) {
+            Long taskCount = taskMapper.selectCount(taskQueryWrapper);
+            if (taskCount > 0) {
                 // 设置批次为已提交，1为已提交，0为未提交
                 batch.setIsCommit(Constants.YES);
             } else {
@@ -434,8 +303,10 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
                     batch.setIsEnd(Constants.NO);
                 }
             }
+        }
 
-        });
+//        records.forEach(batch -> {
+//        });
 
         // 只看已提交或未提交
 //        if (Objects.nonNull(batchQueryVo.getIsCommit())) {
@@ -458,28 +329,54 @@ public class BatchServiceImpl extends ServiceImpl<BatchMapper, Batch> implements
         return batchIPage;
     }
 
+    /**
+     * TODO 管理员查看提交详情时，查询批次列表，包括已提交人数和总人数
+     *
+     * @Author DengChao
+     * @Date 2023/10/29 14:32
+     */
     @Override
-    public IPage<Batch> selectPageIsCommitAndCount(Page<Batch> pageParam, BatchQueryVo batchQueryVo) {
-        IPage<Batch> batchIPage = this.selectPageIsCommit(pageParam, batchQueryVo);
+    public IPage<Batch> selectPageIsCommitAndCount(Page<Batch> pageParam, BatchQueryDTO batchQueryDTO) {
+        IPage<Batch> batchIPage = this.selectPageIsCommit(pageParam, batchQueryDTO);
         List<Batch> records = batchIPage.getRecords();
         records.forEach(batch -> {
+
             // 根据批次id查询作业表，统计作业数量
-            QueryWrapper<Task> taskQueryWrapper = new QueryWrapper<>();
-            taskQueryWrapper.eq("belong_batch_id", batch.getId());
-            Long personCount = taskMapper.selectCount(taskQueryWrapper);
-            // 设置已交人数
-            batch.setPersonCount(personCount);
+            QueryWrapper<Task> taskQW = new QueryWrapper<>();
+            taskQW.eq("belong_batch_id", batch.getId());
+            // 设置已交数
+            batch.setAlreadyCount(taskMapper.selectCount(taskQW));
+
+
             // 查询用户总人数，不包括系统管理员
-            Long totalCount = userMapper.selectCount(new QueryWrapper<User>().ne("id",1));
-            // 设置用户总人数
+            Long totalCount = userMapper.selectCount(new QueryWrapper<User>().ne("id", 1));
+            if ("group".equals(batchQueryDTO.getBatchType())) {
+                // 群组批次，则将总人数改为总群数
+                totalCount = groupMapper.selectCount(new QueryWrapper<Group>().eq("belong_course", batchQueryDTO.getBelongCourseId()));
+            }
+            // 设置总数
             batch.setTotalCount(totalCount);
 
-            // 获取批次文件夹
-            File batchFolder = new File(batch.getFolderPath());
-            // 获取文件夹大小
-            long sizeOfBatchDirectory = FileUtils.sizeOfDirectory(batchFolder);
+            // 获取总文件夹
+            File fileFolder = new File(fileSaveLocation);
+            // 获取批次下所有的作业记录
+            List<Task> taskList = taskMapper.selectList(taskQW);
+            // 获取所有的文件名
+            List<String> fileNameList = taskList.stream().map((task -> task.getFileSha256() + task.getFileType())).toList();
+            // 获取文件夹下所有的fileNameList中对应的文件
+            List<File> fileList = new ArrayList<>();
+            fileNameList.forEach(fileName -> {
+                File file = fileFolder.listFiles((dir, name) -> name.equals(fileName))[0];
+                fileList.add(file);
+            });
+
+            // 统计所有文件的大小
+            long sizeOfFiles = 0;
+            if (fileList.size() != 0) {
+                sizeOfFiles = fileList.stream().mapToLong(File::length).sum();
+            }
             // 设置文件夹大小
-            batch.setSizeOfDirectory(sizeOfBatchDirectory);
+            batch.setSizeOfDirectory(sizeOfFiles);
         });
         return batchIPage;
     }

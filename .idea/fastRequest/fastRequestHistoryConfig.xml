@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="fastRequestHistoryConfig">
+    <option name="historyList">
+      <list>
+        <ResponseHistory>
+          <option name="className" value="top.belongme.controller.UserController" />
+          <option name="code" value="200" />
+          <option name="enableEnv" value="local" />
+          <option name="enableProject" value="Task-Manage-Back" />
+          <option name="method" value="getNoCommitUserList" />
+          <option name="methodType" value="GET" />
+          <option name="name" value="TODO 根据批次id获取未交用户列表" />
+          <option name="paramGroup">
+            <ParamGroupCollection>
+              <option name="className" value="top.belongme.controller.UserController" />
+              <option name="method" value="getNoCommitUserList" />
+              <option name="methodDescription" value="TODO 根据批次id获取未交用户列表" />
+              <option name="multipartKeyValueListJson" value="[]" />
+              <option name="originUrl" value="/user/noCommitUserList/{page}/{limit}" />
+              <option name="pathParamsKeyValueListJson" value="[{&quot;comment&quot;:&quot;&quot;,&quot;customFlag&quot;:2,&quot;enabled&quot;:true,&quot;key&quot;:&quot;page&quot;,&quot;type&quot;:&quot;Number&quot;,&quot;value&quot;:&quot;1&quot;},{&quot;comment&quot;:&quot;&quot;,&quot;customFlag&quot;:2,&quot;enabled&quot;:true,&quot;key&quot;:&quot;limit&quot;,&quot;type&quot;:&quot;Number&quot;,&quot;value&quot;:&quot;1&quot;}]" />
+              <option name="returnDocument" value="{&quot;code&quot;:&quot;状态码&quot;,&quot;msg&quot;:&quot;提示信息，如果有错误时，前端可以获取该字段进行提示&quot;,&quot;data&quot;:{}}" />
+              <option name="url" value="/user/noCommitUserList/1/1" />
+              <option name="urlEncodedKeyValueListJson" value="[]" />
+              <option name="urlParamsKeyValueListJson" value="[{&quot;comment&quot;:&quot;&quot;,&quot;customFlag&quot;:2,&quot;enabled&quot;:true,&quot;key&quot;:&quot;studentName&quot;,&quot;type&quot;:&quot;String&quot;,&quot;value&quot;:&quot;studentName_koxdc&quot;},{&quot;comment&quot;:&quot;&quot;,&quot;customFlag&quot;:2,&quot;enabled&quot;:true,&quot;key&quot;:&quot;belongBatchId&quot;,&quot;type&quot;:&quot;String&quot;,&quot;value&quot;:&quot;belongBatchId_vrzvh&quot;},{&quot;comment&quot;:&quot;&quot;,&quot;customFlag&quot;:2,&quot;enabled&quot;:true,&quot;key&quot;:&quot;belongCourseId&quot;,&quot;type&quot;:&quot;String&quot;,&quot;value&quot;:&quot;belongCourseId_eb500&quot;}]" />
+              <option name="urlParamsKeyValueListText" value="studentName=studentName_koxdc&#10;&amp;belongBatchId=belongBatchId_vrzvh&#10;&amp;belongCourseId=belongCourseId_eb500" />
+            </ParamGroupCollection>
+          </option>
+          <option name="requestInfo" value="Request Url: http://localhost:8888/user/noCommitUserList/1/1?belongBatchId=%62%65%6C%6F%6E%67%42%61%74%63%68%49%64%5F%76%72%7A%76%68&amp;belongCourseId=%62%65%6C%6F%6E%67%43%6F%75%72%73%65%49%64%5F%65%62%35%30%30&amp;studentName=%73%74%75%64%65%6E%74%4E%61%6D%65%5F%6B%6F%78%64%63&#13;&#10;Request Headers: &#13;&#10;    Accept: application/json,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8&#13;&#10;    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36 Hutool&#13;&#10;    Accept-Encoding: gzip, deflate&#13;&#10;    Accept-Language: zh-CN,zh;q=0.8&#13;&#10;    token: eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI2NmYwODk5OTZlNjA0NGJmOWI3YjRhMzdmOTE5OTgyMiIsInN1YiI6IjEiLCJpc3MiOiJzZyIsImlhdCI6MTY5MjExMTQwNSwiZXhwIjoxNjkyMTE1MDA1fQ.HKczsxnGfvZBPDvK5BlIj293He_zGe39uBN-xMjasso&#13;&#10;Request Body: &#13;&#10;    null&#13;&#10;" />
+          <option name="response" value="{&quot;code&quot;:800,&quot;msg&quot;:&quot;该批次不存在&quot;,&quot;data&quot;:null}" />
+          <option name="url" value="/user/noCommitUserList/1/1" />
+        </ResponseHistory>
+        <ResponseHistory>
+          <option name="className" value="top.belongme.controller.CourseController" />
+          <option name="code" value="200" />
+          <option name="enableEnv" value="local" />
+          <option name="enableProject" value="Task-Manage-Back" />
+          <option name="method" value="getCourseListOnlyEnabled" />
+          <option name="methodType" value="GET" />
+          <option name="name" value="TODO 获取课程列表，只要已启用的" />
+          <option name="paramGroup">
+            <ParamGroupCollection>
+              <option name="className" value="top.belongme.controller.CourseController" />
+              <option name="method" value="getCourseListOnlyEnabled" />
+              <option name="methodDescription" value="TODO 获取课程列表，只要已启用的" />
+              <option name="multipartKeyValueListJson" value="[]" />
+              <option name="originUrl" value="/course/listOnlyEnabled" />
+              <option name="pathParamsKeyValueListJson" value="[]" />
+              <option name="returnDocument" value="{&quot;code&quot;:&quot;状态码&quot;,&quot;msg&quot;:&quot;提示信息，如果有错误时，前端可以获取该字段进行提示&quot;,&quot;data&quot;:{}}" />
+              <option name="url" value="/course/listOnlyEnabled" />
+              <option name="urlEncodedKeyValueListJson" value="[]" />
+              <option name="urlParamsKeyValueListJson" value="[]" />
+            </ParamGroupCollection>
+          </option>
+          <option name="requestInfo" value="Request Url: http://localhost:8888/course/listOnlyEnabled&#13;&#10;Request Headers: &#13;&#10;    Accept: application/json,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8&#13;&#10;    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36 Hutool&#13;&#10;    Accept-Encoding: gzip, deflate&#13;&#10;    Accept-Language: zh-CN,zh;q=0.8&#13;&#10;    token: eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI2NmYwODk5OTZlNjA0NGJmOWI3YjRhMzdmOTE5OTgyMiIsInN1YiI6IjEiLCJpc3MiOiJzZyIsImlhdCI6MTY5MjExMTQwNSwiZXhwIjoxNjkyMTE1MDA1fQ.HKczsxnGfvZBPDvK5BlIj293He_zGe39uBN-xMjasso&#13;&#10;Request Body: &#13;&#10;    null&#13;&#10;" />
+          <option name="response" value="{&quot;code&quot;:200,&quot;msg&quot;:&quot;操作成功&quot;,&quot;data&quot;:[{&quot;id&quot;:&quot;1684206125448810497&quot;,&quot;courseName&quot;:&quot;课程&quot;,&quot;description&quot;:&quot;课程&quot;,&quot;creatorName&quot;:null,&quot;modifierName&quot;:null,&quot;status&quot;:1,&quot;createTime&quot;:&quot;2023-07-26 22:16:46&quot;,&quot;updateTime&quot;:&quot;2023-07-26 23:25:47&quot;},{&quot;id&quot;:&quot;1684206142121168897&quot;,&quot;courseName&quot;:&quot;课程2&quot;,&quot;description&quot;:&quot;课程2&quot;,&quot;creatorName&quot;:null,&quot;modifierName&quot;:null,&quot;status&quot;:1,&quot;createTime&quot;:&quot;2023-07-26 22:16:49&quot;,&quot;updateTime&quot;:&quot;2023-07-29 22:23:06&quot;}]}" />
+          <option name="url" value="/course/listOnlyEnabled" />
+        </ResponseHistory>
+        <ResponseHistory>
+          <option name="className" value="top.belongme.controller.CourseController" />
+          <option name="code" value="200" />
+          <option name="enableEnv" value="local" />
+          <option name="enableProject" value="Task-Manage-Back" />
+          <option name="method" value="getCourseListOnlyEnabled" />
+          <option name="methodType" value="GET" />
+          <option name="name" value="TODO 获取课程列表，只要已启用的" />
+          <option name="paramGroup">
+            <ParamGroupCollection>
+              <option name="className" value="top.belongme.controller.CourseController" />
+              <option name="method" value="getCourseListOnlyEnabled" />
+              <option name="methodDescription" value="TODO 获取课程列表，只要已启用的" />
+              <option name="multipartKeyValueListJson" value="[]" />
+              <option name="originUrl" value="/course/listOnlyEnabled" />
+              <option name="pathParamsKeyValueListJson" value="[]" />
+              <option name="returnDocument" value="{&quot;code&quot;:&quot;状态码&quot;,&quot;msg&quot;:&quot;提示信息，如果有错误时，前端可以获取该字段进行提示&quot;,&quot;data&quot;:{}}" />
+              <option name="url" value="/course/listOnlyEnabled" />
+              <option name="urlEncodedKeyValueListJson" value="[]" />
+              <option name="urlParamsKeyValueListJson" value="[]" />
+            </ParamGroupCollection>
+          </option>
+          <option name="requestInfo" value="Request Url: http://localhost:8888/course/listOnlyEnabled&#13;&#10;Request Headers: &#13;&#10;    Accept: application/json,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8&#13;&#10;    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36 Hutool&#13;&#10;    Accept-Encoding: gzip, deflate&#13;&#10;    Accept-Language: zh-CN,zh;q=0.8&#13;&#10;    token: eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI2NmYwODk5OTZlNjA0NGJmOWI3YjRhMzdmOTE5OTgyMiIsInN1YiI6IjEiLCJpc3MiOiJzZyIsImlhdCI6MTY5MjExMTQwNSwiZXhwIjoxNjkyMTE1MDA1fQ.HKczsxnGfvZBPDvK5BlIj293He_zGe39uBN-xMjasso&#13;&#10;Request Body: &#13;&#10;    null&#13;&#10;" />
+          <option name="response" value="{&quot;code&quot;:200,&quot;msg&quot;:&quot;操作成功&quot;,&quot;data&quot;:[{&quot;id&quot;:&quot;1684206125448810497&quot;,&quot;courseName&quot;:&quot;课程&quot;,&quot;description&quot;:&quot;课程&quot;,&quot;creatorName&quot;:null,&quot;modifierName&quot;:null,&quot;status&quot;:1,&quot;createTime&quot;:&quot;2023-07-26 22:16:46&quot;,&quot;updateTime&quot;:&quot;2023-07-26 23:25:47&quot;},{&quot;id&quot;:&quot;1684206142121168897&quot;,&quot;courseName&quot;:&quot;课程2&quot;,&quot;description&quot;:&quot;课程2&quot;,&quot;creatorName&quot;:null,&quot;modifierName&quot;:null,&quot;status&quot;:1,&quot;createTime&quot;:&quot;2023-07-26 22:16:49&quot;,&quot;updateTime&quot;:&quot;2023-07-29 22:23:06&quot;}]}" />
+          <option name="url" value="/course/listOnlyEnabled" />
+        </ResponseHistory>
+        <ResponseHistory>
+          <option name="className" value="top.belongme.controller.CourseController" />
+          <option name="code" value="200" />
+          <option name="enableEnv" value="local" />
+          <option name="enableProject" value="Task-Manage-Back" />
+          <option name="method" value="getCourseListOnlyEnabled" />
+          <option name="methodType" value="GET" />
+          <option name="name" value="TODO 获取课程列表，只要已启用的" />
+          <option name="paramGroup">
+            <ParamGroupCollection>
+              <option name="className" value="top.belongme.controller.CourseController" />
+              <option name="method" value="getCourseListOnlyEnabled" />
+              <option name="methodDescription" value="TODO 获取课程列表，只要已启用的" />
+              <option name="multipartKeyValueListJson" value="[]" />
+              <option name="originUrl" value="/course/listOnlyEnabled" />
+              <option name="pathParamsKeyValueListJson" value="[]" />
+              <option name="returnDocument" value="{&quot;code&quot;:&quot;状态码&quot;,&quot;msg&quot;:&quot;提示信息，如果有错误时，前端可以获取该字段进行提示&quot;,&quot;data&quot;:{}}" />
+              <option name="url" value="/course/listOnlyEnabled" />
+              <option name="urlEncodedKeyValueListJson" value="[]" />
+              <option name="urlParamsKeyValueListJson" value="[]" />
+            </ParamGroupCollection>
+          </option>
+          <option name="requestInfo" value="Request Url: http://localhost:8888/course/listOnlyEnabled&#13;&#10;Request Headers: &#13;&#10;    Accept: application/json,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8&#13;&#10;    Authentication: eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI2NmYwODk5OTZlNjA0NGJmOWI3YjRhMzdmOTE5OTgyMiIsInN1YiI6IjEiLCJpc3MiOiJzZyIsImlhdCI6MTY5MjExMTQwNSwiZXhwIjoxNjkyMTE1MDA1fQ.HKczsxnGfvZBPDvK5BlIj293He_zGe39uBN-xMjasso&#13;&#10;    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36 Hutool&#13;&#10;    Accept-Encoding: gzip, deflate&#13;&#10;    Accept-Language: zh-CN,zh;q=0.8&#13;&#10;Request Body: &#13;&#10;    null&#13;&#10;" />
+          <option name="response" value="{&quot;code&quot;:808,&quot;msg&quot;:&quot;请先登陆&quot;}" />
+          <option name="url" value="/course/listOnlyEnabled" />
+        </ResponseHistory>
+        <ResponseHistory>
+          <option name="className" value="top.belongme.controller.LoginController" />
+          <option name="code" value="200" />
+          <option name="enableEnv" value="local" />
+          <option name="enableProject" value="Task-Manage-Back" />
+          <option name="method" value="login" />
+          <option name="methodType" value="POST" />
+          <option name="paramGroup">
+            <ParamGroupCollection>
+              <option name="bodyKeyValueListJson" value="{&#10;  &quot;username&quot;: &quot;admin&quot;,&#10;  &quot;password&quot;: &quot;123456&quot;&#10;}" />
+              <option name="className" value="top.belongme.controller.LoginController" />
+              <option name="jsonDocument" value="{&#10;  &quot;id&quot;: &quot;No comment,Value =id_ocoar&quot;,&#10;  &quot;username&quot;: &quot;No comment,Value =username_kpsp6&quot;,&#10;  &quot;password&quot;: &quot;No comment,Value =password_2ow02&quot;,&#10;  &quot;name&quot;: &quot;No comment,Value =name_bnnhh&quot;,&#10;  &quot;studentNumber&quot;: &quot;No comment,Value =studentNumber_7gox2&quot;,&#10;  &quot;roleId&quot;: &quot;No comment,Value =roleId_40l7u&quot;,&#10;  &quot;roleName&quot;: &quot;No comment,Value =roleName_bozh1&quot;,&#10;  &quot;email&quot;: &quot;No comment,Value =email_1ezts&quot;,&#10;  &quot;hasEmail&quot;: &quot;No comment,Value =true&quot;,&#10;  &quot;avatar&quot;: &quot;No comment,Value =avatar_l7d3g&quot;,&#10;  &quot;status&quot;: &quot;No comment,Value =1&quot;,&#10;  &quot;createTime&quot;: &quot;No comment,Value =2023-08-15 22:53:07&quot;,&#10;  &quot;updateTime&quot;: &quot;No comment,Value =2023-08-15 22:53:07&quot;&#10;}" />
+              <option name="method" value="login" />
+              <option name="methodDescription" value="New Request" />
+              <option name="methodType" value="POST" />
+              <option name="multipartKeyValueListJson" value="[]" />
+              <option name="originUrl" value="/user/login" />
+              <option name="pathParamsKeyValueListJson" value="[]" />
+              <option name="returnDocument" value="{&quot;code&quot;:&quot;状态码&quot;,&quot;msg&quot;:&quot;提示信息，如果有错误时，前端可以获取该字段进行提示&quot;,&quot;data&quot;:{}}" />
+              <option name="url" value="/user/login" />
+              <option name="urlEncodedKeyValueListJson" value="[]" />
+              <option name="urlParamsKeyValueListJson" value="[]" />
+            </ParamGroupCollection>
+          </option>
+          <option name="requestInfo" value="Request Url: http://localhost:8888/user/login&#13;&#10;Request Headers: &#13;&#10;    Accept: application/json,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8&#13;&#10;    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36 Hutool&#13;&#10;    Accept-Encoding: gzip, deflate&#13;&#10;    Accept-Language: zh-CN,zh;q=0.8&#13;&#10;    Content-Length: 49&#13;&#10;    Content-Type: application/json;charset=UTF-8&#13;&#10;Request Body: &#13;&#10;    {&#10;  &quot;username&quot;: &quot;admin&quot;,&#10;  &quot;password&quot;: &quot;123456&quot;&#10;}&#13;&#10;" />
+          <option name="response" value="{&quot;code&quot;:200,&quot;msg&quot;:&quot;登陆成功&quot;,&quot;data&quot;:{&quot;token&quot;:&quot;eyJhbGciOiJIUzI1NiJ9.eyJqdGkiOiI2NmYwODk5OTZlNjA0NGJmOWI3YjRhMzdmOTE5OTgyMiIsInN1YiI6IjEiLCJpc3MiOiJzZyIsImlhdCI6MTY5MjExMTQwNSwiZXhwIjoxNjkyMTE1MDA1fQ.HKczsxnGfvZBPDvK5BlIj293He_zGe39uBN-xMjasso&quot;}}" />
+          <option name="url" value="/user/login" />
+        </ResponseHistory>
+        <ResponseHistory>
+          <option name="className" value="top.belongme.controller.LoginController" />
+          <option name="enableEnv" value="local" />
+          <option name="enableProject" value="Task-Manage-Back" />
+          <option name="method" value="login" />
+          <option name="methodType" value="POST" />
+          <option name="paramGroup">
+            <ParamGroupCollection>
+              <option name="bodyKeyValueListJson" value="{&#10;  &quot;username&quot;: &quot;admin&quot;,&#10;  &quot;password&quot;: &quot;123456&quot;&#10;}" />
+              <option name="className" value="top.belongme.controller.LoginController" />
+              <option name="jsonDocument" value="{&#10;  &quot;id&quot;: &quot;No comment,Value =id_ocoar&quot;,&#10;  &quot;username&quot;: &quot;No comment,Value =username_kpsp6&quot;,&#10;  &quot;password&quot;: &quot;No comment,Value =password_2ow02&quot;,&#10;  &quot;name&quot;: &quot;No comment,Value =name_bnnhh&quot;,&#10;  &quot;studentNumber&quot;: &quot;No comment,Value =studentNumber_7gox2&quot;,&#10;  &quot;roleId&quot;: &quot;No comment,Value =roleId_40l7u&quot;,&#10;  &quot;roleName&quot;: &quot;No comment,Value =roleName_bozh1&quot;,&#10;  &quot;email&quot;: &quot;No comment,Value =email_1ezts&quot;,&#10;  &quot;hasEmail&quot;: &quot;No comment,Value =true&quot;,&#10;  &quot;avatar&quot;: &quot;No comment,Value =avatar_l7d3g&quot;,&#10;  &quot;status&quot;: &quot;No comment,Value =1&quot;,&#10;  &quot;createTime&quot;: &quot;No comment,Value =2023-08-15 22:53:07&quot;,&#10;  &quot;updateTime&quot;: &quot;No comment,Value =2023-08-15 22:53:07&quot;&#10;}" />
+              <option name="method" value="login" />
+              <option name="methodDescription" value="New Request" />
+              <option name="methodType" value="POST" />
+              <option name="multipartKeyValueListJson" value="[]" />
+              <option name="originUrl" value="/user/login" />
+              <option name="pathParamsKeyValueListJson" value="[]" />
+              <option name="returnDocument" value="{&quot;code&quot;:&quot;状态码&quot;,&quot;msg&quot;:&quot;提示信息，如果有错误时，前端可以获取该字段进行提示&quot;,&quot;data&quot;:{}}" />
+              <option name="url" value="/user/login" />
+              <option name="urlEncodedKeyValueListJson" value="[]" />
+              <option name="urlParamsKeyValueListJson" value="[]" />
+            </ParamGroupCollection>
+          </option>
+          <option name="requestInfo" value="Request Url: http://localhost:8080/user/login&#13;&#10;Request Headers: &#13;&#10;    Accept: application/json,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8&#13;&#10;    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36 Hutool&#13;&#10;    Accept-Encoding: gzip, deflate&#13;&#10;    Accept-Language: zh-CN,zh;q=0.8&#13;&#10;    Content-Length: 49&#13;&#10;    Content-Type: application/json;charset=UTF-8&#13;&#10;Request Body: &#13;&#10;    {&#10;  &quot;username&quot;: &quot;admin&quot;,&#10;  &quot;password&quot;: &quot;123456&quot;&#10;}&#13;&#10;" />
+          <option name="response" value="ConnectException: Connection refused: no further information" />
+          <option name="url" value="/user/login" />
+        </ResponseHistory>
+        <ResponseHistory>
+          <option name="className" value="top.belongme.controller.LoginController" />
+          <option name="enableEnv" value="local" />
+          <option name="enableProject" value="Task-Manage-Back" />
+          <option name="method" value="login" />
+          <option name="methodType" value="POST" />
+          <option name="paramGroup">
+            <ParamGroupCollection>
+              <option name="bodyKeyValueListJson" value="{&#10;  &quot;username&quot;: &quot;admin&quot;,&#10;  &quot;password&quot;: &quot;123456&quot;&#10;}" />
+              <option name="className" value="top.belongme.controller.LoginController" />
+              <option name="jsonDocument" value="{&#10;  &quot;id&quot;: &quot;No comment,Value =id_ocoar&quot;,&#10;  &quot;username&quot;: &quot;No comment,Value =username_kpsp6&quot;,&#10;  &quot;password&quot;: &quot;No comment,Value =password_2ow02&quot;,&#10;  &quot;name&quot;: &quot;No comment,Value =name_bnnhh&quot;,&#10;  &quot;studentNumber&quot;: &quot;No comment,Value =studentNumber_7gox2&quot;,&#10;  &quot;roleId&quot;: &quot;No comment,Value =roleId_40l7u&quot;,&#10;  &quot;roleName&quot;: &quot;No comment,Value =roleName_bozh1&quot;,&#10;  &quot;email&quot;: &quot;No comment,Value =email_1ezts&quot;,&#10;  &quot;hasEmail&quot;: &quot;No comment,Value =true&quot;,&#10;  &quot;avatar&quot;: &quot;No comment,Value =avatar_l7d3g&quot;,&#10;  &quot;status&quot;: &quot;No comment,Value =1&quot;,&#10;  &quot;createTime&quot;: &quot;No comment,Value =2023-08-15 22:53:07&quot;,&#10;  &quot;updateTime&quot;: &quot;No comment,Value =2023-08-15 22:53:07&quot;&#10;}" />
+              <option name="method" value="login" />
+              <option name="methodDescription" value="New Request" />
+              <option name="methodType" value="POST" />
+              <option name="multipartKeyValueListJson" value="[]" />
+              <option name="originUrl" value="/user/login" />
+              <option name="pathParamsKeyValueListJson" value="[]" />
+              <option name="returnDocument" value="{&quot;code&quot;:&quot;状态码&quot;,&quot;msg&quot;:&quot;提示信息，如果有错误时，前端可以获取该字段进行提示&quot;,&quot;data&quot;:{}}" />
+              <option name="url" value="/user/login" />
+              <option name="urlEncodedKeyValueListJson" value="[]" />
+              <option name="urlParamsKeyValueListJson" value="[]" />
+            </ParamGroupCollection>
+          </option>
+          <option name="requestInfo" value="Request Url: http://localhost:8080/user/login&#13;&#10;Request Headers: &#13;&#10;    Accept: application/json,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8&#13;&#10;    User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36 Hutool&#13;&#10;    Accept-Encoding: gzip, deflate&#13;&#10;    Accept-Language: zh-CN,zh;q=0.8&#13;&#10;    Content-Length: 49&#13;&#10;    Content-Type: application/json;charset=UTF-8&#13;&#10;Request Body: &#13;&#10;    {&#10;  &quot;username&quot;: &quot;admin&quot;,&#10;  &quot;password&quot;: &quot;123456&quot;&#10;}&#13;&#10;" />
+          <option name="response" value="ConnectException: Connection refused: no further information" />
+          <option name="url" value="/user/login" />
+        </ResponseHistory>
+      </list>
+    </option>
+  </component>
+</project>

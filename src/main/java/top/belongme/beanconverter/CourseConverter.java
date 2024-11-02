@@ -4,7 +4,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Component;
-import top.belongme.model.dto.CourseDTO;
+import top.belongme.model.vo.CourseVO;
 import top.belongme.model.pojo.Course;
 
 import java.util.ArrayList;
@@ -19,32 +19,32 @@ import java.util.List;
  */
 @Component
 public class CourseConverter {
-    public IPage<CourseDTO> convertPage(IPage<Course> source) {
-        IPage<CourseDTO> courseDTOIPage = new Page<>();
+    public IPage<CourseVO> convertPage(IPage<Course> source) {
+        IPage<CourseVO> courseDTOIPage = new Page<>();
 
         BeanUtils.copyProperties(source, courseDTOIPage);
 
-        List<CourseDTO> courseDTOList = new ArrayList<>();
+        List<CourseVO> courseVOList = new ArrayList<>();
         for(Course course : source.getRecords()) {
-            CourseDTO courseDTO = new CourseDTO();
-            BeanUtils.copyProperties(course, courseDTO);
-            courseDTOList.add(courseDTO);
+            CourseVO courseVO = new CourseVO();
+            BeanUtils.copyProperties(course, courseVO);
+            courseVOList.add(courseVO);
         }
-        courseDTOIPage.setRecords(courseDTOList);
+        courseDTOIPage.setRecords(courseVOList);
         return courseDTOIPage;
     }
-    public List<CourseDTO> convertToDTOList(List<Course> courseList) {
-        List<CourseDTO> courseDTOList = new ArrayList<>();
+    public List<CourseVO> convertToDTOList(List<Course> courseList) {
+        List<CourseVO> courseVOList = new ArrayList<>();
         courseList.forEach(course -> {
-            CourseDTO courseDTO = new CourseDTO();
-            BeanUtils.copyProperties(course, courseDTO);
-            courseDTOList.add(courseDTO);
+            CourseVO courseVO = new CourseVO();
+            BeanUtils.copyProperties(course, courseVO);
+            courseVOList.add(courseVO);
         });
-        return courseDTOList;
+        return courseVOList;
     }
-    public CourseDTO convertToDTO(Course course) {
-        CourseDTO courseDTO = new CourseDTO();
-        BeanUtils.copyProperties(course, courseDTO);
-        return courseDTO;
+    public CourseVO convertToDTO(Course course) {
+        CourseVO courseVO = new CourseVO();
+        BeanUtils.copyProperties(course, courseVO);
+        return courseVO;
     }
 }

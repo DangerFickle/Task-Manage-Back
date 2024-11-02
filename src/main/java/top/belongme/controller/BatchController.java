@@ -8,10 +8,10 @@ import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import top.belongme.exception.GlobalBusinessException;
 import top.belongme.beanconverter.BatchConverter;
-import top.belongme.model.dto.BatchDTO;
+import top.belongme.model.vo.BatchVO;
 import top.belongme.model.pojo.Batch;
 import top.belongme.model.result.Result;
-import top.belongme.model.vo.BatchQueryVo;
+import top.belongme.model.dto.BatchQueryDTO;
 import top.belongme.service.BatchService;
 
 import javax.annotation.Resource;
@@ -43,56 +43,56 @@ public class BatchController {
      */
     @PreAuthorize("hasAuthority('job:batch:select')")
     @GetMapping("listPage/{page}/{limit}")
-    public Result<IPage<BatchDTO>> getBatchList(@PathVariable Long page,
-                                             @PathVariable Long limit,
-                                             BatchQueryVo batchQueryVo) {
+    public Result<IPage<BatchVO>> getBatchList(@PathVariable Long page,
+                                               @PathVariable Long limit,
+                                               BatchQueryDTO batchQueryDTO) {
         //创建page对象
         Page<Batch> pageParam = new Page<>(page, limit);
         //调用service方法
-        IPage<Batch> pageModel = batchService.selectPage(pageParam, batchQueryVo);
+        IPage<Batch> pageModel = batchService.selectPage(pageParam, batchQueryDTO);
 
         // 将Batch转换为BatchDTO
-        IPage<BatchDTO> batchDTOIPage = batchConverter.convertPage(pageModel);
+        IPage<BatchVO> batchDTOIPage = batchConverter.convertPage(pageModel);
         return new Result<>(200, "请求成功", batchDTOIPage);
     }
 
     /**
      * TODO 获取批次列表，并设置该用户是否已提交对应批次，分页查询 + 模糊查询
-     *
+     * 用户提交作业时用
      * @Author DengChao
      * @Date 2023/2/10 21:09
      */
     @PreAuthorize("hasAuthority('job:batch:select')")
     @GetMapping("listPageIsCommit/{page}/{limit}")
-    public Result<IPage<BatchDTO>> getBatchListIsCommit(@PathVariable Long page,
-                                                     @PathVariable Long limit,
-                                                     BatchQueryVo batchQueryVo) {
+    public Result<IPage<BatchVO>> getBatchListIsCommit(@PathVariable Long page,
+                                                       @PathVariable Long limit,
+                                                       BatchQueryDTO batchQueryDTO) {
         //创建page对象
         Page<Batch> pageParam = new Page<>(page, limit);
         //调用service方法
-        IPage<Batch> pageModel = batchService.selectPageIsCommit(pageParam, batchQueryVo);
+        IPage<Batch> pageModel = batchService.selectPageIsCommit(pageParam, batchQueryDTO);
         // 将Batch转换为BatchDTO
-        IPage<BatchDTO> batchDTOIPage = batchConverter.convertPage(pageModel);
+        IPage<BatchVO> batchDTOIPage = batchConverter.convertPage(pageModel);
         return new Result<>(200, "请求成功", batchDTOIPage);
     }
 
     /**
-     * TODO 获取批次列表，并设置该用户是否已提交对应批次，加入人数情况，分页查询 + 模糊查询
+     * TODO 获取批次列表，并设置该用户是否已提交对应批次，人数情况，分页查询 + 模糊查询
      *
      * @Author DengChao
      * @Date 2023/2/14 11:04
      */
     @PreAuthorize("hasAuthority('job:batch:select')")
     @GetMapping("listPageIsCommitAndCount/{page}/{limit}")
-    public Result<IPage<BatchDTO>> getBatchListIsCommitAndCount(@PathVariable Long page,
-                                                             @PathVariable Long limit,
-                                                             BatchQueryVo batchQueryVo) {
+    public Result<IPage<BatchVO>> getBatchListIsCommitAndCount(@PathVariable Long page,
+                                                               @PathVariable Long limit,
+                                                               BatchQueryDTO batchQueryDTO) {
         //创建page对象
         Page<Batch> pageParam = new Page<>(page, limit);
         //调用service方法
-        IPage<Batch> pageModel = batchService.selectPageIsCommitAndCount(pageParam, batchQueryVo);
+        IPage<Batch> pageModel = batchService.selectPageIsCommitAndCount(pageParam, batchQueryDTO);
         // 将Batch转换为BatchDTO
-        IPage<BatchDTO> batchDTOIPage = batchConverter.convertPage(pageModel);
+        IPage<BatchVO> batchDTOIPage = batchConverter.convertPage(pageModel);
         return new Result<>(200, "请求成功", batchDTOIPage);
     }
 
@@ -104,11 +104,11 @@ public class BatchController {
      */
     @PreAuthorize("hasAuthority('job:batch:select')")
     @GetMapping("/get/{batchId}")
-    public Result<BatchDTO> getBatch(@PathVariable String batchId) {
+    public Result<BatchVO> getBatch(@PathVariable String batchId) {
         Batch batch = batchService.getById(batchId);
-        BatchDTO batchDTO = new BatchDTO();
-        BeanUtils.copyProperties(batch, batchDTO);
-        return new Result<>(200, "请求成功", batchDTO);
+        BatchVO batchVO = new BatchVO();
+        BeanUtils.copyProperties(batch, batchVO);
+        return new Result<>(200, "请求成功", batchVO);
     }
 
     /**
@@ -123,7 +123,7 @@ public class BatchController {
         if (result != null && result.hasErrors()) {
             throw new GlobalBusinessException(800, Objects.requireNonNull(result.getFieldError()).getDefaultMessage());
         }
-        return batchService.addBatchAndFolderPath(batch);
+        return batchService.addBatch(batch);
     }
 
 
@@ -139,7 +139,7 @@ public class BatchController {
         if (result != null && result.hasErrors()) {
             throw new GlobalBusinessException(800, Objects.requireNonNull(result.getFieldError()).getDefaultMessage());
         }
-        return batchService.updateBatchAndFolderPath(batch);
+        return batchService.updateBatch(batch);
     }
 
     /**
@@ -151,7 +151,7 @@ public class BatchController {
     @PreAuthorize("hasAuthority('job:batch:delete')")
     @DeleteMapping("delete/{batchId}")
     public Result deleteBatch(@PathVariable String batchId) {
-        return batchService.deleteBatchAndFolderPath(batchId);
+        return batchService.deleteBatch(batchId);
     }
 
     /**

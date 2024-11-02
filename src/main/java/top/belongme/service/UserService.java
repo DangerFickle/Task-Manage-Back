@@ -5,10 +5,12 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import top.belongme.model.pojo.user.User;
 import top.belongme.model.result.Result;
-import top.belongme.model.vo.EmailVo;
-import top.belongme.model.vo.ResetPasswordVo;
-import top.belongme.model.vo.TaskDetailsQueryVo;
-import top.belongme.model.vo.UserVo;
+import top.belongme.model.dto.EmailDTO;
+import top.belongme.model.dto.ResetPasswordDTO;
+import top.belongme.model.dto.TaskDetailsQueryDTO;
+import top.belongme.model.dto.UserDTO;
+
+import java.util.List;
 
 /**
  * @Title: UserService
@@ -20,13 +22,13 @@ import top.belongme.model.vo.UserVo;
 public interface UserService extends IService<User> {
     Result<User> getUserInfo(Long userId);
 
-    IPage<User> getNotCommitUserList(Page<User> pageParam, TaskDetailsQueryVo taskDetailsQueryVo);
+    IPage<User> getNotCommitUserList(Page<User> pageParam, TaskDetailsQueryDTO taskDetailsQueryDTO);
 
-    Result resetPassword(ResetPasswordVo user);
+    Result resetPassword(ResetPasswordDTO user);
 
-    Result updateEmail(EmailVo emailVo);
+    Result updateEmail(EmailDTO emailDTO);
 
-    IPage<User> selectPage(Page<User> pageParam, UserVo userVo);
+    IPage<User> selectPage(Page<User> pageParam, UserDTO userDTO);
 
     Result saveUser(User user);
 
@@ -37,4 +39,8 @@ public interface UserService extends IService<User> {
     Result deleteById(String userId);
 
     Result switchStatus(String userId);
+
+    IPage<User> getUserWithoutGroupMember(Page<User> pageParam, UserDTO userDTO);
+
+    Result saveUserBatch(List<User> userList);
 }

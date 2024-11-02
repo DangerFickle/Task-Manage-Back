@@ -5,29 +5,33 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import top.belongme.exception.GlobalBusinessException;
-import top.belongme.mapper.BatchMapper;
-import top.belongme.mapper.RoleMapper;
-import top.belongme.mapper.TaskMapper;
-import top.belongme.mapper.UserMapper;
+import top.belongme.mapper.*;
 import top.belongme.model.pojo.Batch;
+import top.belongme.model.pojo.Course;
 import top.belongme.model.pojo.Role;
 import top.belongme.model.pojo.task.Task;
 import top.belongme.model.pojo.user.LoginUser;
 import top.belongme.model.pojo.user.User;
 import top.belongme.model.result.Result;
-import top.belongme.model.vo.EmailVo;
-import top.belongme.model.vo.ResetPasswordVo;
-import top.belongme.model.vo.TaskDetailsQueryVo;
-import top.belongme.model.vo.UserVo;
+import top.belongme.model.dto.EmailDTO;
+import top.belongme.model.dto.ResetPasswordDTO;
+import top.belongme.model.dto.TaskDetailsQueryDTO;
+import top.belongme.model.dto.UserDTO;
+import top.belongme.service.CourseService;
 import top.belongme.service.UserService;
 import top.belongme.utils.LoginUserUtil;
 import top.belongme.utils.RedisCache;
 
 import javax.annotation.Resource;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.sql.SQLIntegrityConstraintViolationException;
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -53,6 +57,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     @Resource
     private PasswordEncoder passwordEncoder;
 
+    @Resource
+    private UserMapper userMapper;
+
+    @Resource
+    private CourseService courseService;
+
     @Override
     public Result<User> getUserInfo(Long userId) {
         User user = baseMapper.selectById(userId); // 根据用户id查询用户信息
@@ -64,14 +74,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     // 这里使用的还是作业详情的vo类TaskDetailsQueryVo，因为查询未交人员的查询条件是一样的
     @Override
-    public IPage<User> getNotCommitUserList(Page<User> pageParam, TaskDetailsQueryVo taskDetailsQueryVo) {
+    public IPage<User> getNotCommitUserList(Page<User> pageParam, TaskDetailsQueryDTO taskDetailsQueryDTO) {
         // 检查批次是否已被删除
-        Batch batch = batchMapper.selectById(taskDetailsQueryVo.getBelongBatchId());
+        Batch batch = batchMapper.selectById(taskDetailsQueryDTO.getBelongBatchId());
         if (Objects.isNull(batch)) {
             throw new GlobalBusinessException(800, "该批次不存在");
         }
         log.info("获取未交人员列表成功");
-        IPage<User> userIPage = baseMapper.getNotCommitUserList(pageParam, taskDetailsQueryVo);
+        IPage<User> userIPage = baseMapper.getNotCommitUserList(pageParam, taskDetailsQueryDTO);
         userIPage.getRecords().forEach(user -> user.setHasEmail(Objects.nonNull(user.getEmail())));
         return userIPage;
     }
@@ -83,7 +93,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
      * @Date 2023/2/14 14:36
      */
     @Override
-    public Result resetPassword(ResetPasswordVo resetPasswordVo) {
+    public Result resetPassword(ResetPasswordDTO resetPasswordDTO) {
         // 获取当前登陆的用户
         LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
         // 获取当前登陆用户的id
@@ -96,11 +106,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 获取用户的原始密码
         String originPassword = originUser.getPassword();
         // 比较传入的旧密码是否正确
-        if (!passwordEncoder.matches(resetPasswordVo.getOldPassword(), originPassword)) {
+        if (!passwordEncoder.matches(resetPasswordDTO.getOldPassword(), originPassword)) {
             throw new GlobalBusinessException(800, "旧密码错误");
         }
         // 加密新密码
-        String newPassword = passwordEncoder.encode(resetPasswordVo.getNewPassword());
+        String newPassword = passwordEncoder.encode(resetPasswordDTO.getNewPassword());
 
         User user = new User();
         user.setId(userId);
@@ -121,7 +131,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public Result updateEmail(EmailVo emailVo) {
+    public Result updateEmail(EmailDTO emailDTO) {
         // 获取当前登陆的用户
         LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
         // 获取当前登陆用户的id
@@ -134,12 +144,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         // 获取用户的原始密码
         String originPassword = originUser.getPassword();
         // 比较传入的密码是否正确
-        if (!passwordEncoder.matches(emailVo.getPassword(), originPassword)) {
+        if (!passwordEncoder.matches(emailDTO.getPassword(), originPassword)) {
             throw new GlobalBusinessException(800, "密码错误，修改失败");
         }
         User user = new User();
         user.setId(userId);
-        user.setEmail(emailVo.getEmail());
+        user.setEmail(emailDTO.getEmail());
         // 更新用户信息
         int update = baseMapper.updateById(user);
         if (update > 0) {
@@ -151,10 +161,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public IPage<User> selectPage(Page<User> pageParam, UserVo userVo) {
+    public IPage<User> selectPage(Page<User> pageParam, UserDTO userDTO) {
         QueryWrapper<User> qw = new QueryWrapper<>();
-        qw.like("name", userVo.getName())
-                .like("student_number", userVo.getStudentNumber());
+        qw
+                .like("name", userDTO.getName())
+                .like("student_number", userDTO.getStudentNumber())
+                .and(i -> i.ne("role_id", "1"));
         return baseMapper.selectPage(pageParam, qw);
     }
 
@@ -179,6 +191,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (insert <= 0) {
             throw new GlobalBusinessException(800, "用户添加失败");
         }
+        this.calculateCourseMaxGroupSize();
         LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
         log.info("管理员【{}】，添加了用户【{}】", loginUser.getUser().getName(), user.getName());
         return new Result(200, "用户添加成功");
@@ -242,6 +255,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         if (delete <= 0) {
             throw new GlobalBusinessException(800, "用户删除失败");
         }
+        this.calculateCourseMaxGroupSize();
         LoginUser loginUser = LoginUserUtil.getCurrentLoginUser();
         log.info("管理员【{}】删除了用户【{}】", loginUser.getUser().getName(), user.getName());
         return new Result(200, "用户删除成功");
@@ -266,5 +280,55 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         }
         log.info("用户【{}】可用状态更新为【{}】成功", user.getName(), user.getStatus() == 1 ? "可用" : "禁用");
         return new Result(200, "用户状态更新成功");
+    }
+
+    /**
+     * TODO 获取人员列表，除了自己群组的人员
+     *
+     * @Author DengChao
+     * @Date 2024/10/27 14:18
+     */
+    @Override
+    public IPage<User> getUserWithoutGroupMember(Page<User> pageParam, UserDTO userDTO) {
+        return userMapper.getUserWithoutGroupMember(pageParam, userDTO);
+    }
+
+    @Override
+    public Result saveUserBatch(List<User> userList) {
+        if(userList.size() == 0) {
+            throw new GlobalBusinessException(800, "文件为空");
+        }
+        List<String> userNameList = userList.stream().map(u -> u.getStudentNumber()).toList();
+
+        long count = this.count(new QueryWrapper<User>().in("username", userNameList));
+        if (count > 0) {
+            throw new GlobalBusinessException(800, "文件中存在与现有用户重复的数据");
+        }
+
+        userList.forEach(user -> {
+            user.setUsername(user.getStudentNumber());
+            user.setPassword(passwordEncoder.encode(user.getStudentNumber()));
+            user.setRoleId("3");
+            user.setStatus(0);
+        });
+        boolean savedBatch = this.saveBatch(userList);
+        if(!savedBatch) {
+            throw new GlobalBusinessException(800, "添加失败");
+        }
+        this.calculateCourseMaxGroupSize();
+        return Result.ok();
+    }
+
+    private boolean calculateCourseMaxGroupSize() {
+        // 重新计算所有课程的群组最大数量
+        BigDecimal userCount = BigDecimal.valueOf(this.count(new QueryWrapper<User>().ne("id", 1)));
+        List<Course> courseList = courseService.list();
+        courseList.forEach(course -> {
+            // 计算该课程下群组的最大群组数量
+            BigDecimal groupMaxMemberSize = BigDecimal.valueOf(course.getGroupMaxMemberSize());
+            BigDecimal groupMaxSize = userCount.divide(groupMaxMemberSize,0, RoundingMode.CEILING);
+            course.setGroupMaxSize(groupMaxSize.intValue());
+        });
+        return courseService.updateBatchById(courseList);
     }
 }

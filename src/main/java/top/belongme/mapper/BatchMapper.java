@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.core.metadata.IPage;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import org.apache.ibatis.annotations.Param;
 import top.belongme.model.pojo.Batch;
-import top.belongme.model.vo.BatchQueryVo;
+import top.belongme.model.dto.BatchQueryDTO;
 
 /**
  * @Title: BatchMapper
@@ -15,5 +15,5 @@ import top.belongme.model.vo.BatchQueryVo;
  * @Date 2023/2/915:29
  */
 public interface BatchMapper extends BaseMapper<Batch> {
-    IPage<Batch> selectPage(Page<Batch> pageParam, @Param("vo") BatchQueryVo batchQueryVo);
+    IPage<Batch> selectPage(Page<Batch> pageParam, @Param("dto") BatchQueryDTO batchQueryDTO);
 }
